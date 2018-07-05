@@ -72,7 +72,7 @@ public class Engine implements Runnable {
     }
 
     private void initDisplay() {
-        window = new Window(Constants.GAME_TITLE, DisplaySettings.getDisplayDimensions(), DisplaySettings.getVsync());
+        window = new Window(gameToRun.getTitle(), DisplaySettings.getDisplayDimensions(), DisplaySettings.getVsync());
         window.init();
     }
 
