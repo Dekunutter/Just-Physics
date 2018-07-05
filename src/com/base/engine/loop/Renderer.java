@@ -1,6 +1,7 @@
 package com.base.engine.loop;
 
 import com.base.engine.Engine;
+import com.base.engine.GameState;
 import com.base.engine.render.Transformation;
 
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
@@ -14,16 +15,9 @@ public class Renderer {
         transformation = new Transformation();
     }
 
-    public void render() {
+    public void render(GameState game) {
         clear();
-
-        switch(Engine.state) {
-            case INTRO:
-                break;
-            case GAME:
-                break;
-        }
-
+        game.render();
         Engine.window.update();
     }
 

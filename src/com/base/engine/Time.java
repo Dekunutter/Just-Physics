@@ -8,7 +8,7 @@ public class Time {
     }
 
     public static float getDelta() {
-        switch(Engine.getGameLoopType()) {
+        switch(Engine.getInstance().getGameLoopType()) {
             case FIXED:
                 return 0.66f;
             case LOOSE:

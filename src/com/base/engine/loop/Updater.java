@@ -1,6 +1,6 @@
 package com.base.engine.loop;
 
-import com.base.engine.Engine;
+import com.base.engine.GameState;
 
 public class Updater {
     public static Updater updater;
@@ -9,12 +9,8 @@ public class Updater {
 
     }
 
-    public void update() {
-        switch(Engine.state) {
-            case INTRO:
-                break;
-            case GAME:
-                break;
-        }
+    public void update(GameState game)
+    {
+        game.update();
     }
 }
