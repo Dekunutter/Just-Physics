@@ -57,6 +57,7 @@ public class Engine implements Runnable {
         initOpenGL();
         initOpenAL();
         initKeyboard();
+        initUpdater();
 
         startGameLoop();
     }
@@ -88,6 +89,10 @@ public class Engine implements Runnable {
         inputter = new Inputter();
     }
 
+    private void initUpdater() {
+        updater = new Updater();
+    }
+
     public Type getGameLoopType() {
         return gameLoopType;
     }
@@ -99,8 +104,6 @@ public class Engine implements Runnable {
         long lastTime = System.nanoTime();
         long totalTime = 0;
         long updateTime = 0;
-
-        Updater updater = new Updater();
 
         while(!window.shouldClose() && !hasQuit) {
             long now = System.nanoTime();
