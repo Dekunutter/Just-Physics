@@ -1,6 +1,7 @@
 package com.base.engine;
 
 import com.base.engine.loop.*;
+import com.base.engine.physics.Integration;
 import com.base.engine.render.DisplaySettings;
 
 import java.net.URL;
@@ -22,7 +23,8 @@ public class Engine implements Runnable {
     public static Window window;
     private final Thread gameLoopThread;
 
-    private final Type gameLoopType = Type.FIXED;
+    private LoopType gameLoopType;
+    private Integration integrationType;
 
     public static Engine getInstance() {
         if(engine == null) {
@@ -36,7 +38,17 @@ public class Engine implements Runnable {
     }
 
     public void start(GameState gameToRun) {
+        start(gameToRun, LoopType.FIXED, Integration.EXPLICIT);
+    }
+
+    public void start(GameState gameToRun, LoopType gameLoopType) {
+        start(gameToRun, gameLoopType, Integration.EXPLICIT);
+    }
+
+    public void start(GameState gameToRun, LoopType gameloopType, Integration integrationType) {
         this.gameToRun = gameToRun;
+        this.gameLoopType = gameloopType;
+        this.integrationType = integrationType;
 
         String osName = System.getProperty("os.name");
         if(osName.contains("Mac")) {
@@ -93,11 +105,26 @@ public class Engine implements Runnable {
         updater = new Updater();
     }
 
-    public Type getGameLoopType() {
+    public LoopType getGameLoopType() {
         return gameLoopType;
     }
 
     private void startGameLoop() {
+        switch(gameLoopType) {
+            case FIXED:
+                startFixedGameLoop();
+                break;
+            case VARIABLE:
+                startVariableGameLoop();
+                break;
+            default:
+                startFixedGameLoop();
+                break;
+        }
+    }
+
+    //TODO: Launch game loops from enum types.
+    private void startFixedGameLoop() {
         Time.init();
 
         int frames = 0;
@@ -106,6 +133,8 @@ public class Engine implements Runnable {
         long updateTime = 0;
 
         while(!window.shouldClose() && !hasQuit) {
+            Time.update();
+
             long now = System.nanoTime();
             long passed = now - lastTime;
             lastTime = now;
@@ -116,7 +145,7 @@ public class Engine implements Runnable {
 
             while(updateTime >= LOOP_STEP) {
                 framesPassed = frames;
-                updater.update(gameToRun);
+                updater.update(gameToRun, integrationType);
                 updateTime -= LOOP_STEP;
                 inputter.reset();
             }
@@ -129,8 +158,34 @@ public class Engine implements Runnable {
                 frames = 0;
             }
             frames++;
+        }
+    }
 
+    private void startVariableGameLoop() {
+        Time.init();
+
+        int frames = 0;
+        long lastTime = System.nanoTime();
+        long totalTime = 0;
+
+        while(!window.shouldClose() && !hasQuit) {
             Time.update();
+
+            long now = System.nanoTime();
+            long passed = now - lastTime;
+            totalTime += passed;
+
+            inputter.getInput(gameToRun);
+            updater.update(gameToRun, integrationType);
+            renderer.render(gameToRun);
+
+            if(totalTime >= FRAME_COUNTER) {
+                framesPassed = frames;
+                System.out.println("FPS: " + frames + " " + Time.getDelta());
+                totalTime = 0;
+                frames = 0;
+            }
+            frames++;
         }
     }
 }

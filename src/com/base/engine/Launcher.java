@@ -1,12 +1,16 @@
 package com.base.engine;
 
+import com.base.engine.loop.LoopType;
+import com.base.engine.physics.Integration;
 import com.base.game.Game;
 
 public class Launcher {
     public static void main(String[] args) {
         GameState game = new Game();
 
+        Debug.enableDebug();
+
         Engine engine = Engine.getInstance();
-        engine.start(game);
+        engine.start(game, LoopType.EULER, Integration.SEMI_IMPLICIT);
     }
 }

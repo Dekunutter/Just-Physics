@@ -1,6 +1,7 @@
 package com.base.engine;
 
 import com.base.engine.loop.GameLoop;
+import com.base.engine.physics.Integration;
 
 public abstract class GameState implements GameLoop {
     protected String gameTitle = "My Game";
@@ -11,8 +12,8 @@ public abstract class GameState implements GameLoop {
     }
 
     @Override
-    public void update() {
-
+    public void update(Integration integrationType) {
+        //TODO: Pass integration type into each physics body that needs to update
     }
 
     @Override
