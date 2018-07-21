@@ -17,6 +17,11 @@ public abstract class GameState implements GameLoop {
     }
 
     @Override
+    public void interpolate(float alpha) {
+
+    }
+
+    @Override
     public void render() {
 
     }

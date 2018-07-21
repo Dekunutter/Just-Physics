@@ -1,7 +1,7 @@
 package com.base.game;
 
 import com.base.engine.GameState;
-import com.base.engine.physics.Body;
+import com.base.engine.physics.body.Body;
 import com.base.engine.physics.Integration;
 import org.joml.Vector3f;
 
@@ -17,6 +17,11 @@ public class Game extends GameState {
     }
 
     public void update(Integration integrationType) {
+        testBody.updatePreviousState();
         testBody.advancePhysics(integrationType);
+    }
+
+    public void interpolate(float alpha) {
+        testBody.interpolate(alpha);
     }
 }

@@ -1,6 +1,10 @@
 package com.base.engine;
 
+import com.base.engine.loop.LoopType;
+
 public class Time {
+    public static int NANOSECONDS_TO_SECONDS = 1000000000;
+
     private static long startTime, currentTime, lastTime;
     private static float frameTime, previousDelta;
 
@@ -11,15 +15,16 @@ public class Time {
     public static float getDelta() {
         switch(Engine.getInstance().getGameLoopType()) {
             case FIXED:
-                //TODO: Research the desire to have a timestep closer to representing the actually time between update calls in the game loop. This is the engine loopstep converted to seconds for real-time step calculations
                 return 0.01666666667f;
                 //return 0.66f;
             case SEMI_FIXED:
-                return Math.min(frameTime, 0.01666666667f);
+                return Math.min(Time.convertNanosecondsToSeconds(frameTime), 0.01666666667f);
             case FREED:
                 return 0.01666666667f;
             case VARIABLE:
-                return frameTime;
+                return Time.convertNanosecondsToSeconds(frameTime);
+            case INTERPOLATED:
+                return 0.01666666667f;
             default:
                 return 0.66f;
         }
@@ -39,6 +44,13 @@ public class Time {
         currentTime = getTime();
 
         frameTime = currentTime - lastTime;
+
+        //cap physics at 4 loops per second on interpolation loop types
+        if(Engine.getInstance().getGameLoopType() == LoopType.INTERPOLATED) {
+            if(frameTime > Time.convertSecondsToNanoseconds(0.25f)) {
+                frameTime = Time.convertSecondsToNanoseconds(0.25f);
+            }
+        }
     }
 
     public static void init() {
@@ -54,5 +66,13 @@ public class Time {
 
     public static long timeSinceLaunch() {
         return currentTime - startTime;
+    }
+
+    public static float convertNanosecondsToSeconds(float nanoTime) {
+        return nanoTime / NANOSECONDS_TO_SECONDS;
+    }
+
+    public static float convertSecondsToNanoseconds(float time) {
+        return time * NANOSECONDS_TO_SECONDS;
     }
 }

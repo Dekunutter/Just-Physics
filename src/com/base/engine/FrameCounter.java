@@ -1,6 +1,7 @@
 package com.base.engine;
 
 public class FrameCounter {
+    //TODO: Reuse nanosecond static constant in Time class
     private static final long FRAME_COUNTER = 1000000000;
 
     private static FrameCounter instance = null;
@@ -22,6 +23,7 @@ public class FrameCounter {
         return instance;
     }
 
+    //TODO: Reuse time variables from Time class instead of duplicating them here, if possible
     public void calculateFramerate() {
         long now = System.nanoTime();
         long passed = now - lastTime;
