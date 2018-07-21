@@ -11,6 +11,6 @@ public class Launcher {
         Debug.enableDebug();
 
         Engine engine = Engine.getInstance();
-        engine.start(game, LoopType.EULER, Integration.SEMI_IMPLICIT);
+        engine.start(game, LoopType.FREED, Integration.EXPLICIT);
     }
 }

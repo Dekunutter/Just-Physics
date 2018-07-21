@@ -76,7 +76,7 @@ public class Body {
 
     //Fixes the issues with stiff equations that other euler methods have at the cost of requiring more object state and more complex math
     private void advanceImplicitly() {
-        Debug.println("%s    %s    %s   %s", Time.getDelta(), position, velocity, previousPosition);
+        Debug.println("%s    %s    %s", Time.getDelta(), position, velocity);
 
         force.div(mass, acceleration);
 
@@ -92,7 +92,7 @@ public class Body {
     //Great for multiple bodies and such where I don't really care about velocities and can presume them
     //Requires fixed time steps to retain accuracy
     private void advanceWithVerlet() {
-        Debug.println("%s    %s     %s", Time.getDelta(), position, velocity);
+        Debug.println("%s    %s     %s      %s", Time.getDelta(), position, velocity, previousPosition);
 
         Vector3f tempPosition = new Vector3f(position);
 

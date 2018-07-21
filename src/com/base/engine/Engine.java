@@ -114,6 +114,12 @@ public class Engine implements Runnable {
             case FIXED:
                 startFixedGameLoop();
                 break;
+            case SEMI_FIXED:
+                startSemiFixedGameLoop();
+                break;
+            case FREED:
+                startFreedGameLoop();
+                break;
             case VARIABLE:
                 startVariableGameLoop();
                 break;
@@ -123,69 +129,78 @@ public class Engine implements Runnable {
         }
     }
 
-    //TODO: Launch game loops from enum types.
     private void startFixedGameLoop() {
         Time.init();
 
-        int frames = 0;
-        long lastTime = System.nanoTime();
-        long totalTime = 0;
+        while(!window.shouldClose() && !hasQuit) {
+            Time.update();
+
+            inputter.getInput(gameToRun);
+            updater.update(gameToRun, integrationType);
+            renderer.render(gameToRun);
+
+            FrameCounter.getInstance().calculateFramerate();
+        }
+    }
+
+    private void startSemiFixedGameLoop() {
+        Time.init();
+
         long updateTime = 0;
 
         while(!window.shouldClose() && !hasQuit) {
             Time.update();
 
-            long now = System.nanoTime();
-            long passed = now - lastTime;
-            lastTime = now;
-            totalTime += passed;
-            updateTime += passed;
+            updateTime += Time.getFrameTime();
 
             inputter.getInput(gameToRun);
 
+            while(updateTime > 0.0f) {
+                updater.update(gameToRun, integrationType);
+                updateTime -= Time.getDelta();
+                inputter.reset();
+            }
+            renderer.render(gameToRun);
+
+            FrameCounter.getInstance().calculateFramerate();
+        }
+    }
+
+    private void startFreedGameLoop() {
+        Time.init();
+
+        long updateTime = 0;
+
+        while(!window.shouldClose() && !hasQuit) {
+            Time.update();
+
+            updateTime += Time.getFrameTime();
+
+            inputter.getInput(gameToRun);
+
+            //TODO: Swap time calculations to milliseconds and then these doesn't need to compensate from nanoseconds anymorer? What accuracy do I lose doing that though?
             while(updateTime >= LOOP_STEP) {
-                framesPassed = frames;
                 updater.update(gameToRun, integrationType);
                 updateTime -= LOOP_STEP;
                 inputter.reset();
             }
             renderer.render(gameToRun);
 
-            if(totalTime >= FRAME_COUNTER) {
-                framesPassed = frames;
-                System.out.println("FPS: " + frames + " " + Time.getDelta());
-                totalTime = 0;
-                frames = 0;
-            }
-            frames++;
+            FrameCounter.getInstance().calculateFramerate();
         }
     }
 
     private void startVariableGameLoop() {
         Time.init();
 
-        int frames = 0;
-        long lastTime = System.nanoTime();
-        long totalTime = 0;
-
         while(!window.shouldClose() && !hasQuit) {
             Time.update();
-
-            long now = System.nanoTime();
-            long passed = now - lastTime;
-            totalTime += passed;
 
             inputter.getInput(gameToRun);
             updater.update(gameToRun, integrationType);
             renderer.render(gameToRun);
 
-            if(totalTime >= FRAME_COUNTER) {
-                framesPassed = frames;
-                System.out.println("FPS: " + frames + " " + Time.getDelta());
-                totalTime = 0;
-                frames = 0;
-            }
-            frames++;
+            FrameCounter.getInstance().calculateFramerate();
         }
     }
 }

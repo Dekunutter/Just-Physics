@@ -1,5 +1,5 @@
 package com.base.engine.loop;
 
 public enum LoopType {
-    FIXED, VARIABLE
+    FIXED, SEMI_FIXED, FREED, VARIABLE
 }

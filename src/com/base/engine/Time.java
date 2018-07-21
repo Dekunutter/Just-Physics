@@ -2,7 +2,7 @@ package com.base.engine;
 
 public class Time {
     private static long startTime, currentTime, lastTime;
-    private static float previousDelta;
+    private static float frameTime, previousDelta;
 
     public static long getTime() {
         return System.nanoTime();
@@ -14,9 +14,12 @@ public class Time {
                 //TODO: Research the desire to have a timestep closer to representing the actually time between update calls in the game loop. This is the engine loopstep converted to seconds for real-time step calculations
                 return 0.01666666667f;
                 //return 0.66f;
+            case SEMI_FIXED:
+                return Math.min(frameTime, 0.01666666667f);
+            case FREED:
+                return 0.01666666667f;
             case VARIABLE:
-                //TODO: Return actual variable time step calculated from the game loop earlier and update previous delta
-                return 0.66f;
+                return frameTime;
             default:
                 return 0.66f;
         }
@@ -34,6 +37,8 @@ public class Time {
     public static void update() {
         lastTime = currentTime;
         currentTime = getTime();
+
+        frameTime = currentTime - lastTime;
     }
 
     public static void init() {
@@ -41,6 +46,10 @@ public class Time {
 
         currentTime = getTime();
         lastTime = getTime();
+    }
+
+    public static float getFrameTime() {
+        return frameTime;
     }
 
     public static long timeSinceLaunch() {
