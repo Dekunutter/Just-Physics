@@ -236,6 +236,9 @@ public class Engine implements Runnable {
             interpolater.interpolate(gameToRun, alpha);
 
             renderer.render(gameToRun);
+            if(!DisplaySettings.getVsync()) {
+                renderer.sync();
+            }
 
             FrameCounter.getInstance().calculateFramerate();
         }

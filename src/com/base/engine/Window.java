@@ -20,7 +20,8 @@ public class Window {
     private final String title;
     private int width, height;
     private long handle;
-    private boolean isResized, isVSyncEnabled;
+    private boolean isResized, isVSyncEnabled, isFramerateCapped;
+    private int framerateCap;
 
     private GLFWErrorCallback errorCallback;
     private GLFWKeyCallback keyCallback;
@@ -30,11 +31,13 @@ public class Window {
         this(title, dimensions.x, dimensions.y, isVSyncEnabled);
     }
 
-    public Window(String title, int width, int height, boolean isVSyncEnabled) {
+    public Window(String title, int width, int height, boolean isVSyncEnable) {
         this.title = title;
         this.width = width;
         this.height = height;
         this.isVSyncEnabled = isVSyncEnabled;
+        this.isFramerateCapped = DisplaySettings.isFramerateCapped();
+        this.framerateCap = DisplaySettings.getTargetFramerate();
         this.isResized = false;
     }
 
@@ -65,6 +68,7 @@ public class Window {
                 if(newWidth > 0 && newHeight > 0) {
                     width = newWidth;
                     height = newHeight;
+                    setResized(true);
                 }
             }
         });
@@ -100,7 +104,15 @@ public class Window {
         if(!isVSyncEnabled) {
             glfwSwapInterval(0);
         } else {
-            glfwSwapInterval(1);
+            if(isFramerateCapped) {
+                if(framerateCap == 60) {
+                    glfwSwapInterval(1);
+                } else if(framerateCap == 30) {
+                    glfwSwapInterval(2);
+                }
+            } else {
+                glfwSwapInterval(1);
+            }
         }
     }
 
@@ -141,5 +153,12 @@ public class Window {
 
     public boolean shouldClose() {
         return glfwWindowShouldClose(handle);
+    }
+
+    public void resizeIfNeeded() {
+        if(isResized) {
+            glViewport(0, 0, width, height);
+            setResized(false);
+        }
     }
 }

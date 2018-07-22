@@ -7,9 +7,10 @@ import static org.lwjgl.glfw.GLFW.*;
 public class Keys {
     private static Keys keys;
 
-    public static ArrayList<Integer> up, down, left, right;
-    public static ArrayList<Integer> enter, space, shift, control, escape;
+    public ArrayList<Integer> up, down, left, right;
+    public ArrayList<Integer> enter, space, shift, control, escape;
 
+    //TODO: Refactor this code with key arrays moved into game package as they are game specific, not engine code
     private Keys() {
         up = new ArrayList<>();
         down = new ArrayList<>();

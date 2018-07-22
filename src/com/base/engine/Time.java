@@ -68,6 +68,10 @@ public class Time {
         return currentTime - startTime;
     }
 
+    public static long getCurrentTime() {
+        return currentTime;
+    }
+
     public static float convertNanosecondsToSeconds(float nanoTime) {
         return nanoTime / NANOSECONDS_TO_SECONDS;
     }
