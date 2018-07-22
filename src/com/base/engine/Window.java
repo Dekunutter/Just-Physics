@@ -105,10 +105,13 @@ public class Window {
             glfwSwapInterval(0);
         } else {
             if(isFramerateCapped) {
+                //TODO: Can't use floats but should have better interval values than looking for hardcoded 60 or 30 frames
                 if(framerateCap == 60) {
                     glfwSwapInterval(1);
                 } else if(framerateCap == 30) {
                     glfwSwapInterval(2);
+                } else {
+                    glfwSwapInterval(1);
                 }
             } else {
                 glfwSwapInterval(1);
