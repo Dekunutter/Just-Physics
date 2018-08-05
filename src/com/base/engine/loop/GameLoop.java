@@ -7,4 +7,5 @@ public interface GameLoop {
     void update(Integration integrationType);
     void interpolate(float alpha);
     void render();
+    void cleanUp();
 }

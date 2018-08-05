@@ -70,6 +70,8 @@ public class Engine implements Runnable {
         initUpdater();
 
         startGameLoop();
+
+        cleanUp();
     }
 
     private void checkVideoSettings() {
@@ -109,6 +111,8 @@ public class Engine implements Runnable {
     }
 
     private void startGameLoop() {
+        gameToRun.start();
+
         switch(gameLoopType) {
             case FIXED:
                 startFixedGameLoop();
@@ -242,5 +246,9 @@ public class Engine implements Runnable {
 
             FrameCounter.getInstance().calculateFramerate();
         }
+    }
+
+    private void cleanUp() {
+        gameToRun.cleanUp();
     }
 }

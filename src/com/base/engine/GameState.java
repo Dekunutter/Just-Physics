@@ -6,6 +6,8 @@ import com.base.engine.physics.Integration;
 public abstract class GameState implements GameLoop {
     protected String gameTitle = "My Game";
 
+    public abstract void start();
+
     @Override
     public void getInput() {
 
@@ -28,5 +30,10 @@ public abstract class GameState implements GameLoop {
 
     public String getTitle() {
         return gameTitle;
+    }
+
+    @Override
+    public void cleanUp() {
+
     }
 }
