@@ -3,31 +3,33 @@ package com.base.game;
 import com.base.engine.GameObject;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.body.Body;
+import com.base.engine.render.Mesh;
 import com.base.engine.render.Shader;
 import com.base.engine.render.shaders.BasicShader;
 import org.joml.Vector3f;
-import org.lwjgl.system.MemoryUtil;
-
-import java.nio.FloatBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class TestObject extends GameObject {
     private float[] vertices = new float[] {
-        0.0f, 0.5f, 0.0f,
+        -0.5f, 0.5f, 0.0f,
         -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f
+        0.5f, -0.5f, 0.0f,
+        0.5f, 0.5f, 0.0f
+    };
+    private float[] colours = new float[] {
+            0.5f, 0.0f, 0.0f,
+            0.0f, 0.5f, 0.0f,
+            0.0f, 0.0f, 0.5f,
+            0.0f, 0.5f, 0.5f
+    };
+    private int[] indices = new int[] {
+            0, 1, 3, 3, 1, 2
     };
     private static Shader shader;
-    private int vboId, vaoId;
-
 
     public TestObject() {
         body = new Body();
@@ -38,27 +40,7 @@ public class TestObject extends GameObject {
         shader = BasicShader.getInstance();
         shader.assign(this);
 
-        FloatBuffer verticesBuffer = null;
-        try {
-            verticesBuffer = MemoryUtil.memAllocFloat(vertices.length);
-            verticesBuffer.put(vertices).flip();
-
-            vaoId = glGenVertexArrays();
-            glBindVertexArray(vaoId);
-
-            vboId = glGenBuffers();
-            glBindBuffer(GL_ARRAY_BUFFER, vboId);
-            glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-            glBindVertexArray(0);
-        } finally {
-            if(verticesBuffer != null) {
-                MemoryUtil.memFree(verticesBuffer);
-            }
-        }
+        mesh = new Mesh(vertices, colours, indices);
     }
 
     @Override
@@ -81,12 +63,14 @@ public class TestObject extends GameObject {
     public void render() {
         shader.bind();
 
-        glBindVertexArray(vaoId);
+        glBindVertexArray(mesh.getVertexArrayId());
         glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
 
         glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
         glBindVertexArray(0);
 
         shader.unbind();
@@ -95,12 +79,6 @@ public class TestObject extends GameObject {
     @Override
     public void cleanUp() {
         shader.unassign(this);
-
-        glDisableVertexAttribArray(0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        glBindVertexArray(0);
-        glDeleteVertexArrays(vaoId);
+        mesh.cleanUp();
     }
 }
