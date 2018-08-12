@@ -6,7 +6,7 @@ import com.base.engine.physics.Integration;
 public abstract class GameState implements GameLoop {
     protected String gameTitle = "My Game";
 
-    public abstract void start();
+    public abstract void start() throws Exception;
 
     @Override
     public void getInput() {

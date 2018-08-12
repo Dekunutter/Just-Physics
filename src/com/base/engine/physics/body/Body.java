@@ -198,4 +198,16 @@ public class Body {
     public void addForce(Vector3f force) {
         this.force.add(force);
     }
+
+    public Vector3f getPosition() {
+        return currentState.position;
+    }
+
+    public Vector3f getRotation() {
+        return currentState.rotation;
+    }
+
+    public float getScale() {
+        return currentState.scale;
+    }
 }

@@ -14,6 +14,10 @@ import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.glClear;
 
 public class Renderer {
+    public static final float FIELD_OF_VIEW = (float) Math.toRadians(60.0f);
+    public static final float Z_NEAR = 0.01f;
+    public static final float Z_FAR  = 1000.0f;
+
     public static Transformation transformation;
     public static Map<Integer, Shader> shaders;
 

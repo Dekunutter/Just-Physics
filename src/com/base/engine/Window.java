@@ -131,6 +131,10 @@ public class Window {
         return handle;
     }
 
+    public float getAspectRatio() {
+        return (float) width / height;
+    }
+
     public boolean isResized() {
         return isResized;
     }

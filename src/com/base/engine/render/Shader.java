@@ -2,7 +2,10 @@ package com.base.engine.render;
 
 import com.base.engine.Debug;
 import com.base.engine.loop.Renderer;
+import org.joml.Matrix4f;
+import org.lwjgl.system.MemoryStack;
 
+import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -79,6 +82,22 @@ public class Shader {
             if (glGetProgrami(programId, GL_VALIDATE_STATUS) == 0) {
                 System.err.println("Warning validing Shader code: " + glGetProgramInfoLog(programId, 1024));
             }
+        }
+    }
+
+    public void createUniform(String uniformName) throws Exception {
+        int uniformLocation = glGetUniformLocation(programId, uniformName);
+        if(uniformLocation < 0) {
+            throw new Exception("Could not find uniform: " + uniformName);
+        }
+        uniforms.put(uniformName, uniformLocation);
+    }
+
+    public void setUniform(String uniformName, Matrix4f value) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            FloatBuffer buffer = stack.mallocFloat(16);
+            value.get(buffer);
+            glUniformMatrix4fv(uniforms.get(uniformName), false, buffer);
         }
     }
 

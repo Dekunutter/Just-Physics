@@ -16,7 +16,7 @@ public class Game extends GameState {
     }
 
     @Override
-    public void start() {
+    public void start() throws Exception {
         testObject = new TestObject();
 
         colour = 0.0f;
