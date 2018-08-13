@@ -1,6 +1,5 @@
 package com.base.game;
 
-import com.base.engine.Debug;
 import com.base.engine.GameObject;
 import com.base.engine.input.keyboard.Keyboard;
 import com.base.engine.input.keyboard.Keys;
@@ -35,7 +34,7 @@ public class TestObject extends GameObject {
     public TestObject() throws Exception {
         body = new Body();
         body.setPosition(0, 0, -2);
-        body.addForce(new Vector3f(10.0f, 0, 0));
+        body.addForce(new Vector3f(1.0f, 0, 0));
         body.setMass(1.0f);
 
         shader = BasicShader.getInstance();
@@ -82,7 +81,7 @@ public class TestObject extends GameObject {
         Matrix4f projectionMatrix = transformation.getProjectionMatrix(Renderer.FIELD_OF_VIEW, Renderer.Z_NEAR, Renderer.Z_FAR);
         shader.setUniform("projectionMatrix", projectionMatrix);
 
-        Matrix4f worldMatrix = transformation.getWorldMatrix(body.getPosition(), body.getRotation(), body.getScale());
+        Matrix4f worldMatrix = transformation.getWorldMatrix(body.getRenderPosition(), body.getRenderRotation(), body.getRenderScale());
         shader.setUniform("worldMatrix", worldMatrix);
 
         mesh.render();
