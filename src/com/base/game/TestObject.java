@@ -1,6 +1,9 @@
 package com.base.game;
 
+import com.base.engine.Debug;
 import com.base.engine.GameObject;
+import com.base.engine.input.keyboard.Keyboard;
+import com.base.engine.input.keyboard.Keys;
 import com.base.engine.loop.Renderer;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.body.Body;
@@ -27,9 +30,11 @@ public class TestObject extends GameObject {
             0, 1, 3, 3, 1, 2
     };
     private static Shader shader;
+    private float scaleModifier;
 
     public TestObject() throws Exception {
         body = new Body();
+        body.setPosition(0, 0, -2);
         body.addForce(new Vector3f(10.0f, 0, 0));
         body.setMass(1.0f);
 
@@ -39,17 +44,29 @@ public class TestObject extends GameObject {
         shader.assign(this);
 
         mesh = new Mesh(vertices, colours, indices);
+
+        scaleModifier = 0.01f;
     }
 
     @Override
     public void getInput() {
-
+        if(Keyboard.isKeyDown(Keys.getInstance().shift)) {
+            scaleModifier = -0.01f;
+        } else {
+            scaleModifier = 0.01f;
+        }
     }
 
     @Override
     public void update(Integration integrationType) {
         body.updatePreviousState();
         body.advancePhysics(integrationType);
+
+
+        body.alterScale(scaleModifier);
+        if(body.getScale() > 1) {
+            body.setScale(1);
+        }
     }
 
     @Override

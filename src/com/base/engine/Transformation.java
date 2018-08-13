@@ -19,7 +19,10 @@ public class Transformation {
     }
 
     public Matrix4f getWorldMatrix(Vector3f offset, Vector3f rotation, float scale) {
-        worldMatrix.identity().translate(offset).rotateX((float) Math.toRadians(rotation.x)).rotateY((float) Math.toRadians(rotation.y)).rotateZ((float) Math.toRadians(rotation.z)).scale(scale);
+        worldMatrix.identity();
+        worldMatrix.translate(offset);
+        worldMatrix.rotateX((float) Math.toRadians(rotation.x)).rotateY((float) Math.toRadians(rotation.y)).rotateZ((float) Math.toRadians(rotation.z));
+        worldMatrix.scale(scale);
         return worldMatrix;
     }
 }

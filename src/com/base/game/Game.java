@@ -34,6 +34,8 @@ public class Game extends GameState {
         if(!Keyboard.isKeyDown(Keys.getInstance().up) && !Keyboard.isKeyDown(Keys.getInstance().down)){
             colourDirection = 0.0f;
         }
+
+        testObject.getInput();
     }
 
     @Override

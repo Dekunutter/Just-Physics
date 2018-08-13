@@ -95,6 +95,8 @@ public class Body {
     //greater accuracy than implicit euler and less memory usage. 2nd order symplectic integrator
     //Great for multiple bodies and such where I don't really care about velocities and can presume them
     //Requires fixed time steps to retain accuracy
+    //TODO: Fix bug in verlet that takes current position and develops velocity off of that without any positional change (aka: declared to spawn at a position that is not (0, 0, 0) and now moving infinitely in the direction of all non-zero values
+    //TODO: Verify all other integration methods work as expected at non-zero starting values
     private void advanceWithVerlet() {
         Debug.println("%s    %s     %s      %s", Time.getDelta(), currentState.position, currentState.velocity, currentState.previousPosition);
 
@@ -203,11 +205,23 @@ public class Body {
         return currentState.position;
     }
 
+    public void setPosition(float x, float y, float z) {
+        currentState.position.set(x, y, z);
+    }
+
     public Vector3f getRotation() {
         return currentState.rotation;
     }
 
     public float getScale() {
         return currentState.scale;
+    }
+
+    public void alterScale(float value) {
+        currentState.scale += value;
+    }
+
+    public void setScale(float newScale) {
+        currentState.scale = newScale;
     }
 }
