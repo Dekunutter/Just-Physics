@@ -4,6 +4,8 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -15,9 +17,8 @@ import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class Mesh {
-    private final int vertexArrayId, vertexBufferId, vertexCount;
-    private final int colourBufferId;
-    private final int indexBufferId;
+    private final int vertexArrayId, vertexCount;
+    private final List<Integer> bufferIds;
 
     public Mesh(float[] positions, float[] colours, int[] indices) {
         FloatBuffer verticesBuffer = null;
@@ -25,28 +26,32 @@ public class Mesh {
         IntBuffer indicesBuffer = null;
         try {
             vertexCount = indices.length;
+            bufferIds = new ArrayList();
 
             vertexArrayId = glGenVertexArrays();
             glBindVertexArray(vertexArrayId);
 
-            vertexBufferId = glGenBuffers();
+            int bufferId = glGenBuffers();
+            bufferIds.add(bufferId);
             verticesBuffer = MemoryUtil.memAllocFloat(positions.length);
             verticesBuffer.put(positions).flip();
-            glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
+            glBindBuffer(GL_ARRAY_BUFFER, bufferId);
             glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW);
             glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 
-            colourBufferId = glGenBuffers();
+            bufferId = glGenBuffers();
+            bufferIds.add(bufferId);
             colourBuffer = MemoryUtil.memAllocFloat(colours.length);
             colourBuffer.put(colours).flip();
-            glBindBuffer(GL_ARRAY_BUFFER, colourBufferId);
+            glBindBuffer(GL_ARRAY_BUFFER, bufferId);
             glBufferData(GL_ARRAY_BUFFER, colourBuffer, GL_STATIC_DRAW);
             glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
 
-            indexBufferId = glGenBuffers();
+            bufferId = glGenBuffers();
+            bufferIds.add(bufferId);
             indicesBuffer = MemoryUtil.memAllocInt(indices.length);
             indicesBuffer.put(indices).flip();
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferId);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -66,10 +71,6 @@ public class Mesh {
 
     public int getVertexArrayId() {
         return vertexArrayId;
-    }
-
-    public int getVertexBufferId() {
-        return vertexBufferId;
     }
 
     public int getVertexCount() {
@@ -93,9 +94,9 @@ public class Mesh {
         glDisableVertexAttribArray(1);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glDeleteBuffers(vertexBufferId);
-        glDeleteBuffers(colourBufferId);
-        glDeleteBuffers(indexBufferId);
+        for(int bufferId: bufferIds) {
+            glDeleteBuffers(bufferId);
+        }
 
         glBindVertexArray(0);
         glDeleteVertexArrays(vertexArrayId);

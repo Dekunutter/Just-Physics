@@ -1,6 +1,7 @@
 package com.base.game;
 
 import com.base.engine.GameObject;
+import com.base.engine.Time;
 import com.base.engine.input.keyboard.Keyboard;
 import com.base.engine.input.keyboard.Keys;
 import com.base.engine.loop.Renderer;
@@ -14,19 +15,32 @@ import org.joml.Vector3f;
 
 public class TestObject extends GameObject {
     private float[] vertices = new float[] {
-        -0.5f, 0.5f, -1.05f,
-        -0.5f, -0.5f, -1.05f,
-        0.5f, -0.5f, -1.05f,
-        0.5f, 0.5f, -1.05f
+        -0.5f, 0.5f, 0.5f,
+        -0.5f, -0.5f, 0.5f,
+        0.5f, -0.5f, 0.5f,
+        0.5f, 0.5f, 0.5f,
+        -0.5f, 0.5f, -0.5f,
+        0.5f, 0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f
     };
     private float[] colours = new float[] {
+            0.5f, 0.0f, 0.0f,
+            0.0f, 0.5f, 0.0f,
+            0.0f, 0.0f, 0.5f,
+            0.0f, 0.5f, 0.5f,
             0.5f, 0.0f, 0.0f,
             0.0f, 0.5f, 0.0f,
             0.0f, 0.0f, 0.5f,
             0.0f, 0.5f, 0.5f
     };
     private int[] indices = new int[] {
-            0, 1, 3, 3, 1, 2
+            0, 1, 3, 3, 1, 2,
+            4, 0, 3, 5, 4, 3,
+            3, 2, 7, 5, 3, 7,
+            6, 1, 0, 6, 0, 4,
+            2, 1, 6, 2, 6, 7,
+            7, 6, 4, 7, 4, 5
     };
     private static Shader shader;
     private float scaleModifier;
@@ -34,7 +48,7 @@ public class TestObject extends GameObject {
     public TestObject() throws Exception {
         body = new Body();
         body.setPosition(0, 0, -2);
-        body.addForce(new Vector3f(1.0f, 0, 0));
+        //body.addForce(new Vector3f(1.0f, 0, 0));
         body.setMass(1.0f);
 
         shader = BasicShader.getInstance();
@@ -61,6 +75,11 @@ public class TestObject extends GameObject {
         body.updatePreviousState();
         body.advancePhysics(integrationType);
 
+        float rotation = body.getRotation().x + (1.5f * Time.getDelta());
+        if(rotation > 360) {
+            rotation = 0;
+        }
+        body.setRotation(rotation, rotation, rotation);
 
         body.alterScale(scaleModifier);
         if(body.getScale() > 1) {

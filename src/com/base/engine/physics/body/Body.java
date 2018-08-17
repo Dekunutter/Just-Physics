@@ -212,6 +212,10 @@ public class Body {
         return currentState.rotation;
     }
 
+    public void setRotation(float x, float y, float z) {
+        currentState.rotation.set(x, y, z);
+    }
+
     public float getScale() {
         return currentState.scale;
     }
