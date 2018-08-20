@@ -3,8 +3,8 @@ package com.base.engine.loop;
 import com.base.engine.Engine;
 import com.base.engine.GameState;
 import com.base.engine.Time;
+import com.base.engine.Transformation;
 import com.base.engine.render.Shader;
-import com.base.engine.render.Transformation;
 
 import java.util.HashMap;
 import java.util.Map;

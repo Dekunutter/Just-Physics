@@ -125,7 +125,7 @@ public class TestObject extends GameObject {
         //shader = BasicShader.getInstance();
         shader = TextureShader.getInstance();
         shader.createUniform("projectionMatrix");
-        shader.createUniform("worldMatrix");
+        shader.createUniform("modelViewMatrix");
         shader.createUniform("texture_sampler");
         shader.assign(this);
 
@@ -171,11 +171,13 @@ public class TestObject extends GameObject {
         shader.bind();
 
         //TODO: Could be moved out of individual item renders since it is used on all meshes that accept it
-        Matrix4f projectionMatrix = transformation.getProjectionMatrix(Renderer.FIELD_OF_VIEW, Renderer.Z_NEAR, Renderer.Z_FAR);
+        Matrix4f projectionMatrix = Renderer.transformation.getProjectionMatrix(Renderer.FIELD_OF_VIEW, Renderer.Z_NEAR, Renderer.Z_FAR);
         shader.setUniform("projectionMatrix", projectionMatrix);
 
-        Matrix4f worldMatrix = transformation.getWorldMatrix(body.getRenderPosition(), body.getRenderRotation(), body.getRenderScale());
-        shader.setUniform("worldMatrix", worldMatrix);
+        Matrix4f viewMatrix = Renderer.transformation.getViewMatrix();
+
+        Matrix4f modelViewMatrix = Renderer.transformation.getModelViewMatrix(body.getRenderPosition(), body.getRenderRotation(), body.getRenderScale(), viewMatrix);
+        shader.setUniform("modelViewMatrix", modelViewMatrix);
 
         shader.setUniform("texture_sampler", 0);
 

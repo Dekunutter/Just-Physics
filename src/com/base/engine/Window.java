@@ -91,8 +91,8 @@ public class Window {
         glDepthFunc(GL_LEQUAL);
 
         //TODO: Incorrectly culls the back face of an object, even when that face rotates towards the "camera". Might resolve itself as I continue since I added this in a bit early
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
+        //glEnable(GL_CULL_FACE);
+        //glCullFace(GL_BACK);
     }
 
     public void setupWindowInput() {
