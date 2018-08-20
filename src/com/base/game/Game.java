@@ -1,8 +1,11 @@
 package com.base.game;
 
+import com.base.engine.Camera;
+import com.base.engine.Engine;
 import com.base.engine.GameState;
 import com.base.engine.input.keyboard.Keyboard;
 import com.base.engine.input.keyboard.Keys;
+import com.base.engine.input.mouse.MouseCursor;
 import com.base.engine.physics.Integration;
 
 import static org.lwjgl.opengl.GL11.glClearColor;
@@ -25,6 +28,10 @@ public class Game extends GameState {
 
     @Override
     public void getInput() {
+        MouseCursor.getInput(Engine.window);
+
+        Camera.getInstance().getInput();
+
         if(Keyboard.isKeyDown(Keys.getInstance().up)) {
             colourDirection = 1.0f;
         }
@@ -40,6 +47,10 @@ public class Game extends GameState {
 
     @Override
     public void update(Integration integrationType) {
+        MouseCursor.update();
+
+        Camera.getInstance().update();
+
         testObject.update(integrationType);
 
         colour += colourDirection * 0.01f;

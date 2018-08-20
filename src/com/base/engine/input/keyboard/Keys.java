@@ -9,8 +9,10 @@ public class Keys {
 
     public ArrayList<Integer> up, down, left, right;
     public ArrayList<Integer> enter, space, shift, control, escape;
+    public ArrayList<Integer> cameraForwards, cameraBackwards;
 
     //TODO: Refactor this code with key arrays moved into game package as they are game specific, not engine code
+    //TODO: Further refactor this code to be "setup" periodically by objects that have input. So a game object with movement input might provide the bindings for WASD, somehow in a singleton manner?
     private Keys() {
         up = new ArrayList<>();
         down = new ArrayList<>();
@@ -21,6 +23,8 @@ public class Keys {
         shift = new ArrayList<>();
         control = new ArrayList<>();
         escape = new ArrayList<>();
+        cameraForwards = new ArrayList<>();
+        cameraBackwards = new ArrayList<>();
 
         up.add(GLFW_KEY_W);
         up.add(GLFW_KEY_UP);
@@ -45,6 +49,10 @@ public class Keys {
         control.add(GLFW_KEY_RIGHT_CONTROL);
 
         escape.add(GLFW_KEY_ESCAPE);
+
+        cameraForwards.add(GLFW_KEY_Z);
+
+        cameraBackwards.add(GLFW_KEY_X);
     }
 
     public static Keys getInstance()

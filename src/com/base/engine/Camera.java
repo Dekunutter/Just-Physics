@@ -1,5 +1,7 @@
 package com.base.engine;
 
+import com.base.engine.input.keyboard.Keyboard;
+import com.base.engine.input.keyboard.Keys;
 import org.joml.Vector3f;
 
 public class Camera {
@@ -7,6 +9,7 @@ public class Camera {
     private static Camera instance;
 
     private final Vector3f position, rotation;
+    private final Vector3f movement;
 
     private Camera() {
         this(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
@@ -19,6 +22,8 @@ public class Camera {
     private Camera(Vector3f startPosition, Vector3f startRotation) {
         position = new Vector3f(startPosition);
         rotation = new Vector3f(startRotation);
+
+        movement = new Vector3f(0, 0, 0);
     }
 
     public Vector3f getPosition()
@@ -58,6 +63,43 @@ public class Camera {
         rotation.x = offsetX;
         rotation.y = offsetY;
         rotation.z = offsetZ;
+    }
+
+    public void getInput()
+    {
+        movement.zero();
+
+        if(Keyboard.isKeyDown(Keys.getInstance().up))
+        {
+            movement.y = 1;
+        }
+        else if(Keyboard.isKeyDown(Keys.getInstance().down))
+        {
+            movement.y = -1;
+        }
+
+        if(Keyboard.isKeyDown(Keys.getInstance().left))
+        {
+            movement.x = -1;
+        }
+        else if(Keyboard.isKeyDown(Keys.getInstance().right))
+        {
+            movement.x = 1;
+        }
+
+        if(Keyboard.isKeyDown(Keys.getInstance().cameraForwards))
+        {
+            movement.z = -1;
+        }
+        else if(Keyboard.isKeyDown(Keys.getInstance().cameraBackwards))
+        {
+            movement.z = 1;
+        }
+    }
+
+    public void update()
+    {
+        movePosition(movement.x * Time.getDelta(), movement.y * Time.getDelta(), movement.z * Time.getDelta());
     }
 
     public static Camera getInstance() {
