@@ -9,6 +9,7 @@ public class Launcher {
         GameState game = new Game();
 
         Debug.enableDebug();
+        //Debug.enablePolygonMode();
 
         Engine engine = Engine.getInstance();
         engine.start(game, LoopType.INTERPOLATED, Integration.SEMI_IMPLICIT);

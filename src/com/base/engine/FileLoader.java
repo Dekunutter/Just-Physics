@@ -3,7 +3,9 @@ package com.base.engine;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 
 public class FileLoader {
@@ -20,5 +22,18 @@ public class FileLoader {
         g.dispose();
 
         return bufferedImage;
+    }
+
+    public static BufferedReader loadFileFromResources(String reference) throws IOException
+    {
+        URL url = FileLoader.class.getClassLoader().getResource(reference);
+
+        if(url == null)
+        {
+            throw new IOException("Cannot find: " + reference);
+        }
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+        return br;
     }
 }

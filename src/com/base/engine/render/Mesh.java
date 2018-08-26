@@ -1,5 +1,6 @@
 package com.base.engine.render;
 
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -18,18 +19,23 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
+//TODO: Create separate inheritable mesh classes for textured, non-textured and other kinds of meshes
 public class Mesh {
+    private static final Vector3f DEFAULT_COLOUR = new Vector3f(1.0f, 1.0f, 1.0f);
+
     private final int vertexArrayId, vertexCount;
     private final List<Integer> bufferIds;
     private Texture texture;
+    private Vector3f colour;
 
-    public Mesh(float[] positions, float[] textureCoords, float[] colours, int[] indices, Texture texture) {
+    public Mesh(float[] positions, float[] textureCoords, float[] normals, int[] indices) {
         FloatBuffer verticesBuffer = null;
         FloatBuffer textureBuffer = null;
-        FloatBuffer colourBuffer = null;
+        FloatBuffer normalBuffer = null;
         IntBuffer indicesBuffer = null;
         try {
-            this.texture = texture;
+            colour = new Vector3f(DEFAULT_COLOUR);
+
             vertexCount = indices.length;
             bufferIds = new ArrayList();
 
@@ -54,10 +60,10 @@ public class Mesh {
 
             bufferId = glGenBuffers();
             bufferIds.add(bufferId);
-            colourBuffer = MemoryUtil.memAllocFloat(colours.length);
-            colourBuffer.put(colours).flip();
+            normalBuffer = MemoryUtil.memAllocFloat(normals.length);
+            normalBuffer.put(normals).flip();
             glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-            glBufferData(GL_ARRAY_BUFFER, colourBuffer, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, normalBuffer, GL_STATIC_DRAW);
             glVertexAttribPointer(2, 3, GL_FLOAT, false, 0, 0);
 
             bufferId = glGenBuffers();
@@ -76,13 +82,25 @@ public class Mesh {
             if(textureBuffer != null) {
                 MemoryUtil.memFree(textureBuffer);
             }
-            if(colourBuffer != null) {
-                MemoryUtil.memFree(colourBuffer);
+            if(normalBuffer != null) {
+                MemoryUtil.memFree(normalBuffer);
             }
             if(indicesBuffer != null) {
                 MemoryUtil.memFree(indicesBuffer);
             }
         }
+    }
+
+    public void addTexture(Texture texture) {
+        this.texture = texture;
+    }
+
+    public boolean isTextured() {
+        return texture != null;
+    }
+
+    public Vector3f getColour() {
+        return colour;
     }
 
     public int getVertexArrayId() {
@@ -94,30 +112,41 @@ public class Mesh {
     }
 
     public void render() {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture.getId());
+        if(texture != null) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
+        }
 
         glBindVertexArray(getVertexArrayId());
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
 
         glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
 
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
         glBindVertexArray(0);
+
+        if(texture != null) {
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
     }
 
     public void cleanUp() {
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         for(int bufferId: bufferIds) {
             glDeleteBuffers(bufferId);
         }
 
-        texture.cleanUp();
+        if(texture != null) {
+            texture.cleanUp();
+        }
 
         glBindVertexArray(0);
         glDeleteVertexArrays(vertexArrayId);

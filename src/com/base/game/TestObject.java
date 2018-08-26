@@ -1,17 +1,16 @@
 package com.base.game;
 
 import com.base.engine.GameObject;
+import com.base.engine.OBJLoader;
 import com.base.engine.Time;
 import com.base.engine.input.keyboard.Keyboard;
 import com.base.engine.input.keyboard.Keys;
 import com.base.engine.loop.Renderer;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.body.Body;
-import com.base.engine.render.Mesh;
 import com.base.engine.render.Shader;
 import com.base.engine.render.Texture;
 import com.base.engine.render.TextureLoader;
-import com.base.engine.render.shaders.BasicShader;
 import com.base.engine.render.shaders.TextureShader;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -118,7 +117,7 @@ public class TestObject extends GameObject {
 
     public TestObject() throws Exception {
         body = new Body();
-        body.setPosition(0, 0, -2);
+        body.setPosition(0, 0, -5);
         body.addForce(new Vector3f(1.0f, 0, 0));
         body.setMass(1.0f);
 
@@ -127,10 +126,13 @@ public class TestObject extends GameObject {
         shader.createUniform("projectionMatrix");
         shader.createUniform("modelViewMatrix");
         shader.createUniform("texture_sampler");
+        shader.createUniform("colour");
+        shader.createUniform("useColour");
         shader.assign(this);
 
         Texture texture = TextureLoader.getInstance().getTexture("res/textures/grassblock.png");
-        mesh = new Mesh(vertices, textureCoords, colours, indices, texture);
+        mesh = OBJLoader.loadMesh("res/models/cube.obj");
+        mesh.addTexture(texture);
 
         scaleModifier = 0.01f;
     }
@@ -180,6 +182,8 @@ public class TestObject extends GameObject {
         shader.setUniform("modelViewMatrix", modelViewMatrix);
 
         shader.setUniform("texture_sampler", 0);
+        shader.setUniform("colour", mesh.getColour());
+        shader.setUniform("useColour", mesh.isTextured() ? 0 : 1);
 
         mesh.render();
 

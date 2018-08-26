@@ -93,6 +93,10 @@ public class Window {
         //TODO: Incorrectly culls the back face of an object, even when that face rotates towards the "camera". Might resolve itself as I continue since I added this in a bit early
         //glEnable(GL_CULL_FACE);
         //glCullFace(GL_BACK);
+
+        if(Debug.isDebuggingEnabled() && Debug.isPolygonModeEnabled()) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
     }
 
     public void setupWindowInput() {
