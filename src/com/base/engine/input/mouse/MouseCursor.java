@@ -1,13 +1,13 @@
 package com.base.engine.input.mouse;
 
 import com.base.engine.Window;
-import org.joml.Vector3d;
+import org.joml.Vector2d;
+import org.joml.Vector2f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 public class MouseCursor {
-    private static Vector3d displayVector;
-    private static boolean isHidden;
+    private static Vector2f displayVector;
 
     private static MouseKeyHandler buttonCallback;
     private static MousePositionHandler positionCallback;
@@ -15,8 +15,7 @@ public class MouseCursor {
     private static MouseScrollHandler scrollCallback;
 
     public static void init(Window window) {
-        displayVector = new Vector3d();
-        isHidden = false;
+        displayVector = new Vector2f();
 
         buttonCallback = new MouseKeyHandler();
         positionCallback = new MousePositionHandler();
@@ -31,31 +30,31 @@ public class MouseCursor {
         glfwSetInputMode(window.getHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
-    public static Vector3d getDisplayVector() {
+    public static Vector2f getDisplayVector() {
         return displayVector;
     }
 
     public static void getInput(Window window) {
-        displayVector = new Vector3d();
+        displayVector = new Vector2f();
 
         double deltaX = positionCallback.getPosition().x - positionCallback.getPreviousPosition().x;
         double deltaY = positionCallback.getPosition().y - positionCallback.getPreviousPosition().y;
         boolean rotateX = deltaX != 0;
         boolean rotateY = deltaY != 0;
         if(rotateX) {
-            displayVector.y = deltaX;
+            displayVector.y = (float) deltaX;
         }
         if(rotateY) {
-            displayVector.x = deltaY;
+            displayVector.x = (float) deltaY;
         }
-        positionCallback.setPreviousPosition();
     }
 
     public static void update() {
         scrollCallback.resetScrollState();
+        positionCallback.setPreviousPosition();
     }
 
-    public static Vector3d getPositionOnScreen() {
+    public static Vector2d getPositionOnScreen() {
         return positionCallback.getPosition();
     }
 
@@ -85,11 +84,9 @@ public class MouseCursor {
 
     public static void freeze() {
         positionCallback.freeze();
-        isHidden = true;
     }
 
     public static void unfreeze() {
         positionCallback.unfreeze();
-        isHidden = false;
     }
 }

@@ -133,7 +133,7 @@ public class Window {
     }
 
     public float getAspectRatio() {
-        return (float) width / height;
+        return (float) width / (float) height;
     }
 
     public boolean isResized() {

@@ -2,6 +2,8 @@ package com.base.engine;
 
 import com.base.engine.input.keyboard.Keyboard;
 import com.base.engine.input.keyboard.Keys;
+import com.base.engine.input.mouse.MouseCursor;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class Camera {
@@ -10,6 +12,8 @@ public class Camera {
 
     private final Vector3f position, rotation;
     private final Vector3f movement;
+    private boolean rotating;
+    private float zoomState;
 
     private Camera() {
         this(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
@@ -24,6 +28,8 @@ public class Camera {
         rotation = new Vector3f(startRotation);
 
         movement = new Vector3f(0, 0, 0);
+        rotating = false;
+        zoomState = 0;
     }
 
     public Vector3f getPosition()
@@ -41,10 +47,12 @@ public class Camera {
         if(offsetZ != 0) {
             position.x += (float) Math.sin(Math.toRadians(rotation.y)) * -1.0f * offsetZ;
             position.z += (float) Math.cos(Math.toRadians(rotation.y)) * offsetZ;
+            position.y += (float) Math.sin(Math.toRadians(rotation.x)) * offsetZ;
         }
         if(offsetX != 0) {
             position.x += (float) Math.sin(Math.toRadians(rotation.y - 90)) * -1.0f * offsetX;
             position.z += (float) Math.cos(Math.toRadians(rotation.y - 90)) * offsetX;
+            position.y += (float) Math.sin(Math.toRadians(rotation.x - 90)) * offsetZ;
         }
         position.y += offsetY;
     }
@@ -60,14 +68,15 @@ public class Camera {
     }
 
     public void moveRotation(float offsetX, float offsetY, float offsetZ) {
-        rotation.x = offsetX;
-        rotation.y = offsetY;
-        rotation.z = offsetZ;
+        rotation.x += offsetX;
+        rotation.y += offsetY;
+        rotation.z += offsetZ;
     }
 
     public void getInput()
     {
         movement.zero();
+        zoomState = 0;
 
         if(Keyboard.isKeyDown(Keys.getInstance().up))
         {
@@ -95,11 +104,32 @@ public class Camera {
         {
             movement.z = 1;
         }
+
+        if(MouseCursor.isRightDown())
+        {
+            MouseCursor.freeze();
+            rotating = true;
+        }
+        else
+        {
+            MouseCursor.unfreeze();
+            rotating = false;
+        }
+
+        if(MouseCursor.isScrolling())
+        {
+            zoomState = (float) MouseCursor.getScroll() * -1.0f;
+        }
     }
 
     public void update()
     {
         movePosition(movement.x * Time.getDelta(), movement.y * Time.getDelta(), movement.z * Time.getDelta());
+        if(rotating) {
+            Vector2f mouseRotation = MouseCursor.getDisplayVector();
+            moveRotation(mouseRotation.x * Time.getDelta(), mouseRotation.y * Time.getDelta(), 0);
+        }
+        movePosition(0, 0, zoomState * Time.getDelta());
     }
 
     public static Camera getInstance() {
