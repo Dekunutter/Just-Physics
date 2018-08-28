@@ -25,8 +25,7 @@ public class Mesh {
 
     private final int vertexArrayId, vertexCount;
     private final List<Integer> bufferIds;
-    private Texture texture;
-    private Vector3f colour;
+    private Material material;
 
     public Mesh(float[] positions, float[] textureCoords, float[] normals, int[] indices) {
         FloatBuffer verticesBuffer = null;
@@ -34,8 +33,6 @@ public class Mesh {
         FloatBuffer normalBuffer = null;
         IntBuffer indicesBuffer = null;
         try {
-            colour = new Vector3f(DEFAULT_COLOUR);
-
             vertexCount = indices.length;
             bufferIds = new ArrayList();
 
@@ -91,16 +88,12 @@ public class Mesh {
         }
     }
 
-    public void addTexture(Texture texture) {
-        this.texture = texture;
+    public Material getMaterial() {
+        return material;
     }
 
-    public boolean isTextured() {
-        return texture != null;
-    }
-
-    public Vector3f getColour() {
-        return colour;
+    public void setMaterial(Material material) {
+        this.material = material;
     }
 
     public int getVertexArrayId() {
@@ -112,6 +105,7 @@ public class Mesh {
     }
 
     public void render() {
+        Texture texture = material.getTexture();
         if(texture != null) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, texture.getId());
@@ -144,6 +138,7 @@ public class Mesh {
             glDeleteBuffers(bufferId);
         }
 
+        Texture texture = material.getTexture();
         if(texture != null) {
             texture.cleanUp();
         }

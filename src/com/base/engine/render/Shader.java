@@ -2,8 +2,10 @@ package com.base.engine.render;
 
 import com.base.engine.Debug;
 import com.base.engine.loop.Renderer;
+import com.base.engine.render.lighting.PointLight;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
@@ -94,6 +96,23 @@ public class Shader {
         uniforms.put(uniformName, uniformLocation);
     }
 
+    public void createPointLightUniform(String uniformName) throws Exception {
+        createUniform(uniformName + ".colour");
+        createUniform(uniformName + ".position");
+        createUniform(uniformName + ".intensity");
+        createUniform(uniformName + ".attenuation.constant");
+        createUniform(uniformName + ".attenuation.linear");
+        createUniform(uniformName + ".attenuation.exponent");
+    }
+
+    public void createMaterialUniform(String uniformName) throws Exception {
+        createUniform(uniformName + ".ambient");
+        createUniform(uniformName + ".diffuse");
+        createUniform(uniformName + ".specular");
+        createUniform(uniformName + ".hasTexture");
+        createUniform(uniformName + ".reflectance");
+    }
+
     public void setUniform(String uniformName, Matrix4f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(16);
@@ -106,8 +125,34 @@ public class Shader {
         glUniform1i(uniforms.get(uniformName), value);
     }
 
+    public void setUniform(String uniformName, float value) {
+        glUniform1f(uniforms.get(uniformName), value);
+    }
+
     public void setUniform(String uniformName, Vector3f value) {
         glUniform3f(uniforms.get(uniformName), value.x, value.y, value.z);
+    }
+
+    public void setUniform(String uniformName, Vector4f value) {
+        glUniform4f(uniforms.get(uniformName), value.x, value.y, value.z, value.w);
+    }
+
+    public void setUniform(String uniformName, PointLight pointLight) {
+        setUniform(uniformName + ".colour", pointLight.getColour());
+        setUniform(uniformName + ".position", pointLight.getPosition());
+        setUniform(uniformName + ".intensity", pointLight.getIntensity());
+        Attenuation attenuation = pointLight.getAttenuation();
+        setUniform(uniformName + ".attenuation.constant", attenuation.getConstant());
+        setUniform(uniformName + ".attenuation.linear", attenuation.getLinear());
+        setUniform(uniformName + ".attenuation.exponent", attenuation.getExponent());
+    }
+
+    public void setUniform(String uniformName, Material material) {
+        setUniform(uniformName + ".ambient", material.getAmbientColour());
+        setUniform(uniformName + ".diffuse", material.getDiffuseColour());
+        setUniform(uniformName + ".specular", material.getSpecularColour());
+        setUniform(uniformName + ".hasTexture", material.isTextured() ? 1 : 0);
+        setUniform(uniformName + ".reflectance", material.getReflectance());
     }
 
     public void bind() {

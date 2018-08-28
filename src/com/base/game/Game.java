@@ -7,12 +7,18 @@ import com.base.engine.input.keyboard.Keyboard;
 import com.base.engine.input.keyboard.Keys;
 import com.base.engine.input.mouse.MouseCursor;
 import com.base.engine.physics.Integration;
+import com.base.engine.render.Attenuation;
+import com.base.engine.render.lighting.PointLight;
+import org.joml.Vector3f;
 
 import static org.lwjgl.opengl.GL11.glClearColor;
 
 public class Game extends GameState {
     private TestObject testObject;
     private float colour, colourDirection;
+    private Vector3f ambientLight;
+    private PointLight pointLight;
+    private float specularPower;
 
     public Game() {
         gameTitle = "Just Physics";
@@ -24,6 +30,15 @@ public class Game extends GameState {
 
         colour = 0.0f;
         colourDirection = 0.0f;
+
+        ambientLight = new Vector3f(1.0f, 1.0f, 1.0f);
+        Vector3f lightColour = new Vector3f(1.0f, 1.0f, 1.0f);
+        Vector3f lightPosition = new Vector3f(0.0f, 0.0f, 1.0f);
+        float lightIntensity = 10.0f;
+        pointLight = new PointLight(lightColour, lightPosition, lightIntensity);
+        Attenuation pointAttenuation = new Attenuation(0.0f, 0.0f, 1.0f);
+        pointLight.setAttenuation(pointAttenuation);
+        specularPower = 10f;
     }
 
     @Override
@@ -65,6 +80,9 @@ public class Game extends GameState {
     public void render() {
         glClearColor(colour, colour, colour, 0.0f);
 
+        testObject.setAmbientLight(ambientLight);
+        testObject.setPointLight(pointLight);
+        testObject.setSpecularPower(specularPower);
         testObject.render();
     }
 

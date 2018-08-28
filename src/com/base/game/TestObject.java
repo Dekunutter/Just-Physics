@@ -8,12 +8,15 @@ import com.base.engine.input.keyboard.Keys;
 import com.base.engine.loop.Renderer;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.body.Body;
+import com.base.engine.render.Material;
 import com.base.engine.render.Shader;
 import com.base.engine.render.Texture;
 import com.base.engine.render.TextureLoader;
-import com.base.engine.render.shaders.TextureShader;
+import com.base.engine.render.lighting.PointLight;
+import com.base.engine.render.shaders.LightShader;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class TestObject extends GameObject {
     private float[] vertices = new float[] {
@@ -114,6 +117,10 @@ public class TestObject extends GameObject {
     };
     private static Shader shader;
     private float scaleModifier;
+    //TODO: Need a better way of pass lights between the game world and each object they interact with
+    private Vector3f ambientLight;
+    private PointLight pointLight;
+    private float specularPower;
 
     public TestObject() throws Exception {
         body = new Body();
@@ -121,18 +128,20 @@ public class TestObject extends GameObject {
         body.addForce(new Vector3f(1.0f, 0, 0));
         body.setMass(1.0f);
 
-        //shader = BasicShader.getInstance();
-        shader = TextureShader.getInstance();
+        shader = LightShader.getInstance();
         shader.createUniform("projectionMatrix");
         shader.createUniform("modelViewMatrix");
         shader.createUniform("texture_sampler");
-        shader.createUniform("colour");
-        shader.createUniform("useColour");
+        shader.createMaterialUniform("material");
+        shader.createUniform("specularPower");
+        shader.createUniform("ambientLight");
+        shader.createPointLightUniform("pointLight");
         shader.assign(this);
 
         Texture texture = TextureLoader.getInstance().getTexture("res/textures/grassblock.png");
+        Material material = new Material(texture, 1f);
         mesh = OBJLoader.loadMesh("res/models/cube.obj");
-        mesh.addTexture(texture);
+        mesh.setMaterial(material);
 
         scaleModifier = 0.01f;
     }
@@ -178,16 +187,38 @@ public class TestObject extends GameObject {
 
         Matrix4f viewMatrix = Renderer.transformation.getViewMatrix();
 
+        shader.setUniform("ambientLight", ambientLight);
+        shader.setUniform("specularPower", specularPower);
+        PointLight currentPointLight = new PointLight(pointLight);
+        Vector3f lightPosition = currentPointLight.getPosition();
+        Vector4f auxilary = new Vector4f(lightPosition, 1.0f);
+        auxilary.mul(viewMatrix);
+        lightPosition.x = auxilary.x;
+        lightPosition.y = auxilary.y;
+        lightPosition.z = auxilary.z;
+        shader.setUniform("pointLight", currentPointLight);
+
         Matrix4f modelViewMatrix = Renderer.transformation.getModelViewMatrix(body.getRenderPosition(), body.getRenderRotation(), body.getRenderScale(), viewMatrix);
         shader.setUniform("modelViewMatrix", modelViewMatrix);
 
         shader.setUniform("texture_sampler", 0);
-        shader.setUniform("colour", mesh.getColour());
-        shader.setUniform("useColour", mesh.isTextured() ? 0 : 1);
+        shader.setUniform("material", mesh.getMaterial());
 
         mesh.render();
 
         shader.unbind();
+    }
+
+    public void setAmbientLight(Vector3f ambientLight) {
+        this.ambientLight = ambientLight;
+    }
+
+    public void setPointLight(PointLight pointLight) {
+        this.pointLight = pointLight;
+    }
+
+    public void setSpecularPower(float specularPower) {
+        this.specularPower = specularPower;
     }
 
     @Override
