@@ -15,6 +15,7 @@ import com.base.engine.render.Texture;
 import com.base.engine.render.TextureLoader;
 import com.base.engine.render.lighting.DirectionalLight;
 import com.base.engine.render.lighting.PointLight;
+import com.base.engine.render.lighting.SpotLight;
 import com.base.engine.render.shaders.LightShader;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -123,12 +124,13 @@ public class TestObject extends GameObject {
     private Vector3f ambientLight;
     private PointLight pointLight;
     private DirectionalLight directionalLight;
+    private SpotLight spotLight;
     private float specularPower;
 
     public TestObject() throws Exception {
         body = new Body();
         body.setPosition(0, 0, -5);
-        body.addForce(new Vector3f(1.0f, 0, 0));
+        //body.addForce(new Vector3f(1.0f, 0, 0));
         body.setMass(1.0f);
 
         shader = LightShader.getInstance();
@@ -140,6 +142,7 @@ public class TestObject extends GameObject {
         shader.createUniform("ambientLight");
         shader.createPointLightUniform("pointLight");
         shader.createDirectionalLightUniform("directionalLight");
+        shader.createSpotLightUniform("spotLight");
         shader.assign(this);
 
         Texture texture = TextureLoader.getInstance().getTexture("res/textures/grassblock.png");
@@ -168,7 +171,7 @@ public class TestObject extends GameObject {
         if(rotation > 360) {
             rotation = 0;
         }
-        body.setRotation(rotation, rotation, rotation);
+        //body.setRotation(rotation, rotation, rotation);
 
         body.alterScale(scaleModifier);
         if(body.getScale() > 1) {
@@ -201,12 +204,23 @@ public class TestObject extends GameObject {
         lightPosition.y = auxilary.y;
         lightPosition.z = auxilary.z;
         shader.setUniform("pointLight", currentPointLight);
+
         DirectionalLight currentDirectionalLight = new DirectionalLight(directionalLight);
         Vector4f direction = new Vector4f(currentDirectionalLight.getDirection(), 0);
         direction.mul(viewMatrix);
         currentDirectionalLight.setDirection(new Vector3f(direction.x, direction.y, direction.z));
         Debug.println("light is shining in %s", direction);
         shader.setUniform("directionalLight", currentDirectionalLight);
+
+        SpotLight currentSpotLight = new SpotLight(spotLight);
+        Vector4f spotDirection = new Vector4f(currentSpotLight.getDirection(), 0);
+        spotDirection.mul(viewMatrix);
+        currentSpotLight.setDirection(new Vector3f(spotDirection.x, spotDirection.y, spotDirection.z));
+        Vector3f spotLightPosition = currentSpotLight.getPointLight().getPosition();
+        Vector4f auxilarySpot = new Vector4f(spotLightPosition, 0);
+        auxilarySpot.mul(viewMatrix);
+        currentSpotLight.getPointLight().setPosition(new Vector3f(auxilarySpot.x, auxilarySpot.y, auxilarySpot.z));
+        shader.setUniform("spotLight", currentSpotLight);
 
         Matrix4f modelViewMatrix = Renderer.transformation.getModelViewMatrix(body.getRenderPosition(), body.getRenderRotation(), body.getRenderScale(), viewMatrix);
         shader.setUniform("modelViewMatrix", modelViewMatrix);
@@ -229,6 +243,10 @@ public class TestObject extends GameObject {
 
     public void setDirectionalLight(DirectionalLight directionalLight) {
         this.directionalLight = directionalLight;
+    }
+
+    public void setSpotLight(SpotLight spotLight) {
+        this.spotLight = spotLight;
     }
 
     public void setSpecularPower(float specularPower) {

@@ -20,6 +20,13 @@ struct PointLight
     Attenuation attenuation;
 };
 
+struct SpotLight
+{
+    PointLight pointLight;
+    vec3 direction;
+    float cutoff;
+};
+
 struct DirectionalLight
 {
     vec3 colour;
@@ -42,6 +49,7 @@ uniform float specularPower;
 uniform Material material;
 uniform PointLight pointLight;
 uniform DirectionalLight directionalLight;
+uniform SpotLight spotLight;
 uniform vec3 camera_pos;
 
 vec4 ambientColour;
@@ -98,12 +106,30 @@ vec4 calculateDirectionalLight(DirectionalLight light, vec3 position, vec3 norma
     return calculateLightColour(light.colour, light.intensity, position, normalize(light.direction), normal);
 }
 
+vec4 calculateSpotLight(SpotLight light, vec3 position, vec3 normal)
+{
+    vec3 lightDirection = light.pointLight.position - position;
+    vec3 toLightDirection = normalize(lightDirection);
+    vec3 fromLightDirection = -toLightDirection;
+    float spotAlpha = dot(fromLightDirection, normalize(light.direction));
+
+    vec4 colour = vec4(0, 0, 0, 0);
+
+    if(spotAlpha > light.cutoff)
+    {
+        colour = calculatePointLight(light.pointLight, position, normal);
+        colour *= (1.0 - (1.0 - spotAlpha) / (1.0 - light.cutoff));
+    }
+    return colour;
+}
+
 void main()
 {
     setupColours(material, outTexCoord);
 
     vec4 diffuseSpecularComp = calculateDirectionalLight(directionalLight, outPosition, outNormal);
     diffuseSpecularComp += calculatePointLight(pointLight, outPosition, outNormal);
+    diffuseSpecularComp += calculateSpotLight(spotLight, outPosition, outNormal);
 
     fragColor = ambientColour * vec4(ambientLight, 1) + diffuseSpecularComp;
 }

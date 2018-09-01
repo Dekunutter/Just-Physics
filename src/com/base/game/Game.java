@@ -11,6 +11,7 @@ import com.base.engine.physics.Integration;
 import com.base.engine.render.Attenuation;
 import com.base.engine.render.lighting.DirectionalLight;
 import com.base.engine.render.lighting.PointLight;
+import com.base.engine.render.lighting.SpotLight;
 import org.joml.Vector3f;
 
 import static org.lwjgl.opengl.GL11.glClearColor;
@@ -21,7 +22,9 @@ public class Game extends GameState {
     private Vector3f ambientLight;
     private PointLight pointLight;
     private DirectionalLight directionalLight;
-    private float lightAngle;
+    private SpotLight spotLight;
+    private float spotLightDirection;
+    private float lightAngle, spotAngle, spotInc;
     private float specularPower;
 
     public Game() {
@@ -42,7 +45,14 @@ public class Game extends GameState {
         pointLight = new PointLight(lightColour, lightPosition, lightIntensity);
         Attenuation pointAttenuation = new Attenuation(0.0f, 0.0f, 1.0f);
         pointLight.setAttenuation(pointAttenuation);
+
         directionalLight = new DirectionalLight(lightColour, new Vector3f(-1, 0, 0), 1);
+
+        PointLight spotPoint = new PointLight(ambientLight, new Vector3f(0.0f, 0.0f, 8.0f), lightIntensity);
+        spotPoint.setAttenuation(new Attenuation(0.0f, 0.0f, 0.2f));
+        spotLight = new SpotLight(spotPoint, new Vector3f(0, 0, -1), (float) Math.cos(Math.toRadians(140)));
+        spotAngle = 0;
+        spotInc = 1;
         specularPower = 10f;
     }
 
@@ -59,6 +69,16 @@ public class Game extends GameState {
             colourDirection = -1.0f;
         }
         if(!Keyboard.isKeyDown(Keys.getInstance().up) && !Keyboard.isKeyDown(Keys.getInstance().down)) {
+            colourDirection = 0.0f;
+        }
+
+        if(Keyboard.isKeyDown(Keys.getInstance().right)) {
+            spotLightDirection = 5.0f;
+        }
+        if(Keyboard.isKeyDown(Keys.getInstance().left)) {
+            spotLightDirection = -5.0f;
+        }
+        if(!Keyboard.isKeyDown(Keys.getInstance().left) && !Keyboard.isKeyDown(Keys.getInstance().right)) {
             colourDirection = 0.0f;
         }
 
@@ -100,6 +120,18 @@ public class Game extends GameState {
         float angleRadians = (float) Math.toRadians(lightAngle);
         directionalLight.setDirectionX((float) Math.sin(angleRadians));
         directionalLight.setDirectionY((float) Math.cos(angleRadians));
+
+        spotLight.getPointLight().setPosition(new Vector3f(spotLight.getPointLight().getPosition().x, spotLight.getPointLight().getPosition().y, spotLight.getPointLight().getPosition().z + (spotLightDirection * Time.getDelta())));
+
+        spotAngle += spotInc * 0.05f;
+        if(spotAngle > 2) {
+            spotInc = -1;
+        } else if(spotAngle < -2) {
+            spotInc = 1;
+        }
+        float spotAngleRadians = (float) Math.toRadians(spotAngle);
+        Vector3f coneDirection = spotLight.getDirection();
+        spotLight.setDirection(new Vector3f(coneDirection.x, (float) Math.sin(spotAngleRadians), coneDirection.z));
     }
 
     @Override
@@ -109,6 +141,7 @@ public class Game extends GameState {
         testObject.setAmbientLight(ambientLight);
         testObject.setPointLight(pointLight);
         testObject.setDirectionalLight(directionalLight);
+        testObject.setSpotLight(spotLight);
         testObject.setSpecularPower(specularPower);
         testObject.render();
     }

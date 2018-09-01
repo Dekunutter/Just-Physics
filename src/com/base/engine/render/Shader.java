@@ -4,6 +4,7 @@ import com.base.engine.Debug;
 import com.base.engine.loop.Renderer;
 import com.base.engine.render.lighting.DirectionalLight;
 import com.base.engine.render.lighting.PointLight;
+import com.base.engine.render.lighting.SpotLight;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -112,6 +113,12 @@ public class Shader {
         createUniform(uniformName + ".intensity");
     }
 
+    public void createSpotLightUniform(String uniformName) throws Exception {
+        createPointLightUniform(uniformName + ".pointLight");
+        createUniform(uniformName + ".direction");
+        createUniform(uniformName + ".cutoff");
+    }
+
     public void createMaterialUniform(String uniformName) throws Exception {
         createUniform(uniformName + ".ambient");
         createUniform(uniformName + ".diffuse");
@@ -158,6 +165,12 @@ public class Shader {
         setUniform(uniformName + ".colour", directionalLight.getColour());
         setUniform(uniformName + ".direction", directionalLight.getDirection());
         setUniform(uniformName + ".intensity", directionalLight.getIntensity());
+    }
+
+    public void setUniform(String uniformName, SpotLight spotLight) {
+        setUniform(uniformName + ".pointLight", spotLight.getPointLight());
+        setUniform(uniformName + ".direction", spotLight.getDirection());
+        setUniform(uniformName + ".cutoff", spotLight.getCutOff());
     }
 
     public void setUniform(String uniformName, Material material) {
