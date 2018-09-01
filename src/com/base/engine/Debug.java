@@ -1,6 +1,7 @@
 package com.base.engine;
 
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -51,6 +52,8 @@ public class Debug {
         for(int i = 0; i < args.length; i++) {
             if (args[i] instanceof Vector3f) {
                 args[i] = ((Vector3f) args[i]).toString(formatter);
+            } else if (args[i] instanceof Vector4f) {
+                args[i] = ((Vector4f) args[i]).toString(formatter);
             } else {
             }
         }

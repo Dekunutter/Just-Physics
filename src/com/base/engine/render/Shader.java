@@ -2,6 +2,7 @@ package com.base.engine.render;
 
 import com.base.engine.Debug;
 import com.base.engine.loop.Renderer;
+import com.base.engine.render.lighting.DirectionalLight;
 import com.base.engine.render.lighting.PointLight;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -105,6 +106,12 @@ public class Shader {
         createUniform(uniformName + ".attenuation.exponent");
     }
 
+    public void createDirectionalLightUniform(String uniformName) throws Exception {
+        createUniform(uniformName + ".colour");
+        createUniform(uniformName + ".direction");
+        createUniform(uniformName + ".intensity");
+    }
+
     public void createMaterialUniform(String uniformName) throws Exception {
         createUniform(uniformName + ".ambient");
         createUniform(uniformName + ".diffuse");
@@ -145,6 +152,12 @@ public class Shader {
         setUniform(uniformName + ".attenuation.constant", attenuation.getConstant());
         setUniform(uniformName + ".attenuation.linear", attenuation.getLinear());
         setUniform(uniformName + ".attenuation.exponent", attenuation.getExponent());
+    }
+
+    public void setUniform(String uniformName, DirectionalLight directionalLight) {
+        setUniform(uniformName + ".colour", directionalLight.getColour());
+        setUniform(uniformName + ".direction", directionalLight.getDirection());
+        setUniform(uniformName + ".intensity", directionalLight.getIntensity());
     }
 
     public void setUniform(String uniformName, Material material) {

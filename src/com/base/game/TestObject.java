@@ -1,5 +1,6 @@
 package com.base.game;
 
+import com.base.engine.Debug;
 import com.base.engine.GameObject;
 import com.base.engine.OBJLoader;
 import com.base.engine.Time;
@@ -12,6 +13,7 @@ import com.base.engine.render.Material;
 import com.base.engine.render.Shader;
 import com.base.engine.render.Texture;
 import com.base.engine.render.TextureLoader;
+import com.base.engine.render.lighting.DirectionalLight;
 import com.base.engine.render.lighting.PointLight;
 import com.base.engine.render.shaders.LightShader;
 import org.joml.Matrix4f;
@@ -120,6 +122,7 @@ public class TestObject extends GameObject {
     //TODO: Need a better way of pass lights between the game world and each object they interact with
     private Vector3f ambientLight;
     private PointLight pointLight;
+    private DirectionalLight directionalLight;
     private float specularPower;
 
     public TestObject() throws Exception {
@@ -136,6 +139,7 @@ public class TestObject extends GameObject {
         shader.createUniform("specularPower");
         shader.createUniform("ambientLight");
         shader.createPointLightUniform("pointLight");
+        shader.createDirectionalLightUniform("directionalLight");
         shader.assign(this);
 
         Texture texture = TextureLoader.getInstance().getTexture("res/textures/grassblock.png");
@@ -197,6 +201,12 @@ public class TestObject extends GameObject {
         lightPosition.y = auxilary.y;
         lightPosition.z = auxilary.z;
         shader.setUniform("pointLight", currentPointLight);
+        DirectionalLight currentDirectionalLight = new DirectionalLight(directionalLight);
+        Vector4f direction = new Vector4f(currentDirectionalLight.getDirection(), 0);
+        direction.mul(viewMatrix);
+        currentDirectionalLight.setDirection(new Vector3f(direction.x, direction.y, direction.z));
+        Debug.println("light is shining in %s", direction);
+        shader.setUniform("directionalLight", currentDirectionalLight);
 
         Matrix4f modelViewMatrix = Renderer.transformation.getModelViewMatrix(body.getRenderPosition(), body.getRenderRotation(), body.getRenderScale(), viewMatrix);
         shader.setUniform("modelViewMatrix", modelViewMatrix);
@@ -215,6 +225,10 @@ public class TestObject extends GameObject {
 
     public void setPointLight(PointLight pointLight) {
         this.pointLight = pointLight;
+    }
+
+    public void setDirectionalLight(DirectionalLight directionalLight) {
+        this.directionalLight = directionalLight;
     }
 
     public void setSpecularPower(float specularPower) {
