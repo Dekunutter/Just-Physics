@@ -1,8 +1,10 @@
 package com.base.engine.render.lighting;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
-public class DirectionalLight {
+public class DirectionalLight extends Light {
     private Vector3f colour, direction;
     private float intensity;
 
@@ -32,6 +34,10 @@ public class DirectionalLight {
         this.direction.set(direction);
     }
 
+    public void setDirection(float x, float y, float z) {
+        direction.set(x, y, z);
+    }
+
     public float getIntensity () {
         return intensity;
     }
@@ -58,5 +64,14 @@ public class DirectionalLight {
 
     public void setDirectionY(float value) {
         direction.y = value;
+    }
+
+    public DirectionalLight getViewPosition(Matrix4f viewMatrix) {
+        DirectionalLight viewedLight = new DirectionalLight(this);
+        Vector4f direction = new Vector4f(viewedLight.getDirection(), 0);
+        direction.mul(viewMatrix);
+        viewedLight.setDirection(direction.x, direction.y, direction.z);
+
+        return viewedLight;
     }
 }

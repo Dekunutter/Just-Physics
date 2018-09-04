@@ -1,6 +1,5 @@
 package com.base.game;
 
-import com.base.engine.Debug;
 import com.base.engine.GameObject;
 import com.base.engine.OBJLoader;
 import com.base.engine.Time;
@@ -10,16 +9,13 @@ import com.base.engine.loop.Renderer;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.body.Body;
 import com.base.engine.render.Material;
-import com.base.engine.render.Shader;
 import com.base.engine.render.Texture;
 import com.base.engine.render.TextureLoader;
-import com.base.engine.render.lighting.DirectionalLight;
 import com.base.engine.render.lighting.PointLight;
 import com.base.engine.render.lighting.SpotLight;
 import com.base.engine.render.shaders.LightShader;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class TestObject extends GameObject {
     private float[] vertices = new float[] {
@@ -118,19 +114,14 @@ public class TestObject extends GameObject {
             // Back face
             4, 6, 7, 5, 4, 7,
     };
-    private static Shader shader;
     private float scaleModifier;
-    //TODO: Need a better way of pass lights between the game world and each object they interact with
-    private Vector3f ambientLight;
-    private PointLight pointLight;
-    private DirectionalLight directionalLight;
-    private SpotLight spotLight;
-    private float specularPower;
 
-    public TestObject() throws Exception {
+    public TestObject(World world) throws Exception {
+        this.world = world;
+
         body = new Body();
         body.setPosition(0, 0, -5);
-        //body.addForce(new Vector3f(1.0f, 0, 0));
+        body.addForce(new Vector3f(1.0f, 0, 0));
         body.setMass(1.0f);
 
         shader = LightShader.getInstance();
@@ -140,9 +131,9 @@ public class TestObject extends GameObject {
         shader.createMaterialUniform("material");
         shader.createUniform("specularPower");
         shader.createUniform("ambientLight");
-        shader.createPointLightUniform("pointLight");
+        shader.createPointLightListUniform("pointLights", PointLight.MAX_POINT_LIGHTS);
         shader.createDirectionalLightUniform("directionalLight");
-        shader.createSpotLightUniform("spotLight");
+        shader.createSpotLightListUniform("spotLights", SpotLight.MAX_SPOT_LIGHTS);
         shader.assign(this);
 
         Texture texture = TextureLoader.getInstance().getTexture("res/textures/grassblock.png");
@@ -171,7 +162,7 @@ public class TestObject extends GameObject {
         if(rotation > 360) {
             rotation = 0;
         }
-        //body.setRotation(rotation, rotation, rotation);
+        body.setRotation(rotation, rotation, rotation);
 
         body.alterScale(scaleModifier);
         if(body.getScale() > 1) {
@@ -194,33 +185,7 @@ public class TestObject extends GameObject {
 
         Matrix4f viewMatrix = Renderer.transformation.getViewMatrix();
 
-        shader.setUniform("ambientLight", ambientLight);
-        shader.setUniform("specularPower", specularPower);
-        PointLight currentPointLight = new PointLight(pointLight);
-        Vector3f lightPosition = currentPointLight.getPosition();
-        Vector4f auxilary = new Vector4f(lightPosition, 1.0f);
-        auxilary.mul(viewMatrix);
-        lightPosition.x = auxilary.x;
-        lightPosition.y = auxilary.y;
-        lightPosition.z = auxilary.z;
-        shader.setUniform("pointLight", currentPointLight);
-
-        DirectionalLight currentDirectionalLight = new DirectionalLight(directionalLight);
-        Vector4f direction = new Vector4f(currentDirectionalLight.getDirection(), 0);
-        direction.mul(viewMatrix);
-        currentDirectionalLight.setDirection(new Vector3f(direction.x, direction.y, direction.z));
-        Debug.println("light is shining in %s", direction);
-        shader.setUniform("directionalLight", currentDirectionalLight);
-
-        SpotLight currentSpotLight = new SpotLight(spotLight);
-        Vector4f spotDirection = new Vector4f(currentSpotLight.getDirection(), 0);
-        spotDirection.mul(viewMatrix);
-        currentSpotLight.setDirection(new Vector3f(spotDirection.x, spotDirection.y, spotDirection.z));
-        Vector3f spotLightPosition = currentSpotLight.getPointLight().getPosition();
-        Vector4f auxilarySpot = new Vector4f(spotLightPosition, 0);
-        auxilarySpot.mul(viewMatrix);
-        currentSpotLight.getPointLight().setPosition(new Vector3f(auxilarySpot.x, auxilarySpot.y, auxilarySpot.z));
-        shader.setUniform("spotLight", currentSpotLight);
+        applyLighting(viewMatrix);
 
         Matrix4f modelViewMatrix = Renderer.transformation.getModelViewMatrix(body.getRenderPosition(), body.getRenderRotation(), body.getRenderScale(), viewMatrix);
         shader.setUniform("modelViewMatrix", modelViewMatrix);
@@ -231,26 +196,6 @@ public class TestObject extends GameObject {
         mesh.render();
 
         shader.unbind();
-    }
-
-    public void setAmbientLight(Vector3f ambientLight) {
-        this.ambientLight = ambientLight;
-    }
-
-    public void setPointLight(PointLight pointLight) {
-        this.pointLight = pointLight;
-    }
-
-    public void setDirectionalLight(DirectionalLight directionalLight) {
-        this.directionalLight = directionalLight;
-    }
-
-    public void setSpotLight(SpotLight spotLight) {
-        this.spotLight = spotLight;
-    }
-
-    public void setSpecularPower(float specularPower) {
-        this.specularPower = specularPower;
     }
 
     @Override

@@ -1,9 +1,13 @@
 package com.base.engine.render.lighting;
 
 import com.base.engine.render.Attenuation;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
-public class PointLight {
+public class PointLight extends Light {
+    public static final int MAX_POINT_LIGHTS = 10;
+
     private Vector3f colour, position;
     protected float intensity;
     private Attenuation attenuation;
@@ -46,6 +50,10 @@ public class PointLight {
         this.position.set(position);
     }
 
+    public void setPosition(float x, float y, float z) {
+        position.set(x, y, z);
+    }
+
     public float getIntensity()
     {
         return intensity;
@@ -64,5 +72,15 @@ public class PointLight {
     public void setAttenuation(Attenuation attenuation)
     {
         this.attenuation = attenuation;
+    }
+
+    public PointLight getViewPosition(Matrix4f viewMatrix) {
+        PointLight viewedLight = new PointLight(this);
+        Vector3f lightPosition = viewedLight.getPosition();
+        Vector4f auxiliaryPosition = new Vector4f(lightPosition, 1.0f);
+        auxiliaryPosition.mul(viewMatrix);
+        viewedLight.setPosition(auxiliaryPosition.x, auxiliaryPosition.y, auxiliaryPosition.z);
+
+        return viewedLight;
     }
 }

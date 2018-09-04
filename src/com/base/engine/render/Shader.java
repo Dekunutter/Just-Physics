@@ -98,6 +98,12 @@ public class Shader {
         uniforms.put(uniformName, uniformLocation);
     }
 
+    public void createPointLightListUniform(String uniformName, int size) throws Exception {
+        for(int i = 0; i < size; i++) {
+            createPointLightUniform(uniformName + "[" + i + "]");
+        }
+    }
+
     public void createPointLightUniform(String uniformName) throws Exception {
         createUniform(uniformName + ".colour");
         createUniform(uniformName + ".position");
@@ -111,6 +117,12 @@ public class Shader {
         createUniform(uniformName + ".colour");
         createUniform(uniformName + ".direction");
         createUniform(uniformName + ".intensity");
+    }
+
+    public void createSpotLightListUniform(String uniformName, int size) throws Exception {
+        for(int i = 0; i < size; i++) {
+            createSpotLightUniform(uniformName + "[" + i + "]");
+        }
     }
 
     public void createSpotLightUniform(String uniformName) throws Exception {
@@ -151,6 +163,17 @@ public class Shader {
         glUniform4f(uniforms.get(uniformName), value.x, value.y, value.z, value.w);
     }
 
+    public void setUniform(String uniformName, PointLight[] pointLights) {
+        int numLights = pointLights != null ? pointLights.length : 0;
+        for(int i = 0; i < numLights; i++) {
+            setUniform(uniformName, pointLights[i], i);
+        }
+    }
+
+    public void setUniform(String uniformName, PointLight pointLight, int position) {
+        setUniform(uniformName + "[" + position + "]", pointLight);
+    }
+
     public void setUniform(String uniformName, PointLight pointLight) {
         setUniform(uniformName + ".colour", pointLight.getColour());
         setUniform(uniformName + ".position", pointLight.getPosition());
@@ -165,6 +188,17 @@ public class Shader {
         setUniform(uniformName + ".colour", directionalLight.getColour());
         setUniform(uniformName + ".direction", directionalLight.getDirection());
         setUniform(uniformName + ".intensity", directionalLight.getIntensity());
+    }
+
+    public void setUniform(String uniformName, SpotLight[] spotLights) {
+        int numLights = spotLights != null ? spotLights.length : 0;
+        for(int i = 0; i < numLights; i++) {
+            setUniform(uniformName, spotLights[i], i);
+        }
+    }
+
+    public void setUniform(String uniformName, SpotLight spotLight, int position) {
+        setUniform(uniformName + "[" + position + "]", spotLight);
     }
 
     public void setUniform(String uniformName, SpotLight spotLight) {

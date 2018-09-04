@@ -1,5 +1,8 @@
 #version 450
 
+const int MAX_POINT_LIGHTS = 10;
+const int MAX_SPOT_LIGHTS = 10;
+
 in vec2 outTexCoord;
 in vec3 outNormal;
 in vec3 outPosition;
@@ -47,9 +50,9 @@ uniform sampler2D texture_sampler;
 uniform vec3 ambientLight;
 uniform float specularPower;
 uniform Material material;
-uniform PointLight pointLight;
+uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform DirectionalLight directionalLight;
-uniform SpotLight spotLight;
+uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 uniform vec3 camera_pos;
 
 vec4 ambientColour;
@@ -128,8 +131,20 @@ void main()
     setupColours(material, outTexCoord);
 
     vec4 diffuseSpecularComp = calculateDirectionalLight(directionalLight, outPosition, outNormal);
-    diffuseSpecularComp += calculatePointLight(pointLight, outPosition, outNormal);
-    diffuseSpecularComp += calculateSpotLight(spotLight, outPosition, outNormal);
+    for(int i = 0; i < MAX_POINT_LIGHTS; i++)
+    {
+        if(pointLights[i].intensity > 0)
+        {
+            diffuseSpecularComp += calculatePointLight(pointLights[i], outPosition, outNormal);
+        }
+    }
+    for(int i = 0; i < MAX_SPOT_LIGHTS; i++)
+    {
+        if(spotLights[i].pointLight.intensity > 0)
+        {
+            diffuseSpecularComp += calculateSpotLight(spotLights[i], outPosition, outNormal);
+        }
+    }
 
     fragColor = ambientColour * vec4(ambientLight, 1) + diffuseSpecularComp;
 }
