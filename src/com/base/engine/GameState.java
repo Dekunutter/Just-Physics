@@ -15,7 +15,7 @@ public abstract class GameState implements GameLoop {
 
     @Override
     public void update(Integration integrationType) {
-        //TODO: Pass integration type into each physics body that needs to update
+
     }
 
     @Override

@@ -8,7 +8,7 @@ public class Transformation {
     private final Matrix4f viewMatrix;
     private final Matrix4f modelViewMatrix;
 
-    //TODO: Find a better place to store projection and view matrices, they are not unique to each object. Maybe the renderer class will be better suited to this
+    //NOTE: Storing these as objects here so that they are reused and not recreated for each object (in the case of modelview) or each world (in the case of projection and view)
     public Transformation() {
         projectionMatrix = new Matrix4f();
         viewMatrix = new Matrix4f();

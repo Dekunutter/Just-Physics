@@ -1,9 +1,6 @@
 package com.base.engine;
 
 public class FrameCounter {
-    //TODO: Reuse nanosecond static constant in Time class
-    private static final long FRAME_COUNTER = 1000000000;
-
     private static FrameCounter instance = null;
 
     private int frames, framesPassed;
@@ -30,7 +27,7 @@ public class FrameCounter {
         lastTime = now;
         totalTime += passed;
 
-        if(totalTime >= FRAME_COUNTER) {
+        if(totalTime >= Time.NANOSECONDS_TO_SECONDS) {
             framesPassed = frames;
             System.out.println("FPS: " + frames + " " + Time.getDelta());
             totalTime = 0;
