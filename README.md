@@ -27,3 +27,12 @@ I've added some different game loop types in the Engine and Time classes:
 - Interpolated fixed with freed physics
 
 My favourite is a fixed time step with freed physics and interpolation in the game loop. It allows the physics to adjust to the framerate of the system without dealing with the possibility of floating point issues on variable time deltas AND it creates an interpolated copy of positional values for the renderer to render smoothly.
+
+
+Additional necessary logic in this project I coded to create a basic engine to support my physics work:
+- Basic GLSL based rendering in OpenGL 4.5
+- OBJ file loading to create 3D meshes on load
+- Texture application
+- Material properties
+- Basic lighting shaders for ambient, directional, point and spot lights
+- Basic camera logic and control
