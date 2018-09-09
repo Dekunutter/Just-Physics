@@ -78,6 +78,7 @@ public class World implements GameLoop {
 
     @Override
     public void render() {
+        //TODO: I think I am getting this confused. I should only have one active camera and any given time that is rendering to the screen but multiple viewports. Complex subject though. Should look into more in the future
         for(int i = 0; i < cameras.size(); i++) {
             calculateProjectionAndView(cameras.get(i));
 
