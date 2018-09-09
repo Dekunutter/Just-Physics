@@ -116,6 +116,8 @@ public class Engine implements Runnable {
         } catch(Exception ex) {
             //TODO: Should I close the game if there is a setup exception caught here? Like a shader failed to link?
             System.err.println("Game initialization error: " + ex.getLocalizedMessage());
+            ex.printStackTrace();
+            System.exit(0);
         }
 
         switch(gameLoopType) {

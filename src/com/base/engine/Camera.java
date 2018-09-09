@@ -1,35 +1,23 @@
 package com.base.engine;
 
-import com.base.engine.input.keyboard.Keyboard;
-import com.base.engine.input.keyboard.Keys;
 import com.base.engine.input.mouse.MouseCursor;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class Camera {
-    //TODO: I don't want camera to be a singleton but I need to alter the renderer code to take in a current camera object as a view matrix and render all objects in THAT camera. Or maybe render each object in the eyes of each camera object by object instead of camera by camera?
-    private static Camera instance;
-
     private final Vector3f position, rotation;
-    private final Vector3f movement;
-    private boolean rotating;
-    private float zoomState;
 
-    private Camera() {
+    public Camera() {
         this(new Vector3f(0, 0, 0), new Vector3f(0, 0, 0));
     }
 
-    private Camera(Vector3f startPosition) {
+    public Camera(Vector3f startPosition) {
         this(startPosition, new Vector3f(0, 0, 0));
     }
 
-    private Camera(Vector3f startPosition, Vector3f startRotation) {
+    public Camera(Vector3f startPosition, Vector3f startRotation) {
         position = new Vector3f(startPosition);
         rotation = new Vector3f(startRotation);
-
-        movement = new Vector3f(0, 0, 0);
-        rotating = false;
-        zoomState = 0;
     }
 
     public Vector3f getPosition()
@@ -73,56 +61,7 @@ public class Camera {
         rotation.z += offsetZ;
     }
 
-    public void getInput()
-    {
-        movement.zero();
-        zoomState = 0;
-
-        if(Keyboard.isKeyDown(Keys.getInstance().up))
-        {
-            movement.y = 1;
-        }
-        else if(Keyboard.isKeyDown(Keys.getInstance().down))
-        {
-            movement.y = -1;
-        }
-
-        if(Keyboard.isKeyDown(Keys.getInstance().left))
-        {
-            movement.x = -1;
-        }
-        else if(Keyboard.isKeyDown(Keys.getInstance().right))
-        {
-            movement.x = 1;
-        }
-
-        if(Keyboard.isKeyDown(Keys.getInstance().cameraForwards))
-        {
-            movement.z = -1;
-        }
-        else if(Keyboard.isKeyDown(Keys.getInstance().cameraBackwards))
-        {
-            movement.z = 1;
-        }
-
-        if(MouseCursor.isRightDown())
-        {
-            MouseCursor.freeze();
-            rotating = true;
-        }
-        else
-        {
-            MouseCursor.unfreeze();
-            rotating = false;
-        }
-
-        if(MouseCursor.isScrolling())
-        {
-            zoomState = (float) MouseCursor.getScroll() * -1.0f;
-        }
-    }
-
-    public void update()
+    public void update(Vector3f movement, boolean rotating, float zoomState)
     {
         movePosition(movement.x * Time.getDelta(), movement.y * Time.getDelta(), movement.z * Time.getDelta());
         if(rotating) {
@@ -130,12 +69,5 @@ public class Camera {
             moveRotation(mouseRotation.x * Time.getDelta(), mouseRotation.y * Time.getDelta(), 0);
         }
         movePosition(0, 0, zoomState * Time.getDelta());
-    }
-
-    public static Camera getInstance() {
-        if(instance == null) {
-            instance = new Camera();
-        }
-        return instance;
     }
 }

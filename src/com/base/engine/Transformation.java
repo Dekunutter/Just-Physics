@@ -21,9 +21,9 @@ public class Transformation {
         return projectionMatrix;
     }
 
-    public Matrix4f getViewMatrix() {
-        Vector3f cameraPosition = Camera.getInstance().getPosition();
-        Vector3f cameraRotation = Camera.getInstance().getRotation();
+    public Matrix4f getViewMatrix(Camera camera) {
+        Vector3f cameraPosition = camera.getPosition();
+        Vector3f cameraRotation = camera.getRotation();
 
         viewMatrix.identity();
         viewMatrix.rotate((float) Math.toRadians(cameraRotation.x), new Vector3f(1, 0, 0)).rotate((float) Math.toRadians(cameraRotation.y), new Vector3f(0, 1, 0));

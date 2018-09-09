@@ -1,5 +1,6 @@
 package com.base.game;
 
+import com.base.engine.Camera;
 import com.base.engine.GameObject;
 import com.base.engine.loop.GameLoop;
 import com.base.engine.loop.Renderer;
@@ -13,15 +14,25 @@ import java.util.ArrayList;
 
 public class World implements GameLoop {
     private LightMap lights;
+    private ArrayList<Camera> cameras;
     private ArrayList<GameObject> worldObjects;
     private Matrix4f projectionMatrix, viewMatrix;
 
     public World() throws Exception {
+        lights = new LightMap();
+        cameras = new ArrayList<>();
+
+        initObjects();
+
+
+    }
+
+    private void initObjects() throws Exception {
         worldObjects = new ArrayList<>();
         GameObject testObject = new TestObject(this);
         worldObjects.add(testObject);
-
-        lights = new LightMap();
+        CameraObject cameraObject = new CameraObject(this);
+        worldObjects.add(cameraObject);
 
         AmbientLight ambientLight = new AmbientLight(new Vector3f(0.1f, 0.1f, 0.1f), 10f);
         lights.put(ambientLight);
@@ -41,8 +52,6 @@ public class World implements GameLoop {
         spotPoint.setAttenuation(new Attenuation(0.0f, 0.0f, 0.2f));
         SpotLight spotLight = new SpotLight(spotPoint, new Vector3f(0, 0, -1), (float) Math.cos(Math.toRadians(140)));
         lights.put(spotLight);
-
-        calculateProjectionAndView();
     }
 
 
@@ -69,10 +78,12 @@ public class World implements GameLoop {
 
     @Override
     public void render() {
-        calculateProjectionAndView();
+        for(int i = 0; i < cameras.size(); i++) {
+            calculateProjectionAndView(cameras.get(i));
 
-        for(int i = 0; i < worldObjects.size(); i++) {
-            worldObjects.get(i).render();
+            for (int j = 0; j < worldObjects.size(); j++) {
+                worldObjects.get(j).render();
+            }
         }
     }
 
@@ -80,9 +91,21 @@ public class World implements GameLoop {
         return lights;
     }
 
-    public void calculateProjectionAndView() {
+    public void addLight(Light light) throws Exception {
+        lights.put(light);
+    }
+
+    public ArrayList<Camera> getCameras() {
+        return cameras;
+    }
+
+    public void addCamera(Camera camera) {
+        cameras.add(camera);
+    }
+
+    public void calculateProjectionAndView(Camera camera) {
         projectionMatrix = Renderer.transformation.getProjectionMatrix(Renderer.FIELD_OF_VIEW, Renderer.Z_NEAR, Renderer.Z_FAR);
-        viewMatrix = Renderer.transformation.getViewMatrix();
+        viewMatrix = Renderer.transformation.getViewMatrix(camera);
     }
 
     public Matrix4f getProjectionMatrix() {

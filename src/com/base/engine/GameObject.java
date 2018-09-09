@@ -13,6 +13,10 @@ public abstract class GameObject implements GameLoop {
     protected Body body;
     protected Mesh mesh;
 
+    protected GameObject(World world) {
+        this.world = world;
+    }
+
     protected void applyLighting(Matrix4f viewMatrix) {
         shader.setUniform("ambientLight", world.getLights().getAmbientLight().getIntensity());
         shader.setUniform("specularPower", world.getLights().getAmbientLight().getSpecularPower());

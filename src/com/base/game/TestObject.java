@@ -117,7 +117,7 @@ public class TestObject extends GameObject {
     private float scaleModifier;
 
     public TestObject(World world) throws Exception {
-        this.world = world;
+        super(world);
 
         body = new Body();
         body.setPosition(0, 0, -5);

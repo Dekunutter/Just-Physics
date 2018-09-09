@@ -32,6 +32,20 @@ public class LightMap {
         this.directionalLight = directionalLight;
     }
 
+    public void put(Light light) throws Exception {
+        if(light instanceof AmbientLight) {
+            put((AmbientLight) light);
+        } else if(light instanceof PointLight) {
+            put((PointLight) light);
+        } else if(light instanceof SpotLight) {
+            put((SpotLight) light);
+        } else if(light instanceof DirectionalLight) {
+            put((DirectionalLight) light);
+        } else {
+            throw new Exception("Unsupported light type");
+        }
+    }
+
     public AmbientLight getAmbientLight() {
         return ambience;
     }
