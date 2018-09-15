@@ -72,6 +72,10 @@ public class Time {
         return currentTime;
     }
 
+    public static long getPreviousFrameTime() {
+        return lastTime;
+    }
+
     public static float convertNanosecondsToSeconds(float nanoTime) {
         return nanoTime / NANOSECONDS_TO_SECONDS;
     }

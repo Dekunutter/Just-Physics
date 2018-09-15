@@ -4,13 +4,12 @@ public class FrameCounter {
     private static FrameCounter instance = null;
 
     private int frames, framesPassed;
-    private long totalTime, lastTime;
+    private long totalTime;
 
     private FrameCounter() {
         frames = 0;
         framesPassed = 0;
         totalTime = 0;
-        lastTime = System.nanoTime();
     }
 
     public static FrameCounter getInstance() {
@@ -20,12 +19,8 @@ public class FrameCounter {
         return instance;
     }
 
-    //TODO: Reuse time variables from Time class instead of duplicating them here, if possible
     public void calculateFramerate() {
-        long now = System.nanoTime();
-        long passed = now - lastTime;
-        lastTime = now;
-        totalTime += passed;
+        totalTime += Time.getFrameTime();
 
         if(totalTime >= Time.NANOSECONDS_TO_SECONDS) {
             framesPassed = frames;
