@@ -32,6 +32,7 @@ My favourite is a fixed time step with freed physics and interpolation in the ga
 Additional necessary logic in this project I coded to create a basic engine to support my physics work:
 - Basic GLSL based rendering in OpenGL 4.5
 - OBJ file loading to create 3D meshes on load
+- Creation and storage of display settings using .dat file saved to an AppData folder
 - Texture application
 - Material properties
 - Basic lighting shaders for ambient, directional, point and spot lights
