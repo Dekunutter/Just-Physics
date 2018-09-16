@@ -4,8 +4,6 @@ import com.base.engine.loop.*;
 import com.base.engine.physics.Integration;
 import com.base.engine.render.DisplaySettings;
 
-import java.net.URL;
-
 public class Engine implements Runnable {
     private static Engine engine;
 

@@ -9,7 +9,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +45,7 @@ public class DisplaySettings {
                     readFromSettingsFile(filePath);
                     break;
                 case MAC:
+                    //NOTE: Untested. Coded on a Windows machine
                     filePath = File.separator + "var" + File.separator + "lib" + File.separator + gameTitle + File.separator + SETTINGS_FILE;
                     readFromSettingsFile(filePath);
                     break;
