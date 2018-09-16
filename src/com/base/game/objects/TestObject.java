@@ -1,10 +1,8 @@
-package com.base.game;
+package com.base.game.objects;
 
 import com.base.engine.GameObject;
 import com.base.engine.OBJLoader;
 import com.base.engine.Time;
-import com.base.engine.input.keyboard.Keyboard;
-import com.base.engine.input.keyboard.Keys;
 import com.base.engine.loop.Renderer;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.body.Body;
@@ -14,6 +12,8 @@ import com.base.engine.render.TextureLoader;
 import com.base.engine.render.lighting.PointLight;
 import com.base.engine.render.lighting.SpotLight;
 import com.base.engine.render.shaders.LightShader;
+import com.base.game.World;
+import com.base.game.input.InputCommand;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -146,7 +146,7 @@ public class TestObject extends GameObject {
 
     @Override
     public void getInput() {
-        if(Keyboard.isKeyDown(Keys.getInstance().shift)) {
+        if(controller.hold(InputCommand.SCALE_OBJECT)) {
             scaleModifier = -0.01f;
         } else {
             scaleModifier = 0.01f;

@@ -1,13 +1,12 @@
 package com.base.engine;
 
 import com.base.engine.input.keyboard.Keyboard;
-import com.base.engine.input.mouse.MouseCursor;
+import com.base.engine.input.mouse.Mouse;
 import com.base.engine.render.DisplaySettings;
 import com.base.engine.render.GLFWSettings;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
@@ -24,7 +23,6 @@ public class Window {
     private int framerateCap;
 
     private GLFWErrorCallback errorCallback;
-    private GLFWKeyCallback keyCallback;
     private GLFWFramebufferSizeCallback resizeCallback;
 
     public Window(String title, Vector2i dimensions, boolean isVSyncEnabled) {
@@ -101,7 +99,7 @@ public class Window {
 
     public void setupWindowInput() {
         Keyboard.init(this);
-        MouseCursor.init(this);
+        Mouse.init(this);
     }
 
 

@@ -2,7 +2,6 @@ package com.base.engine.input.keyboard;
 
 import org.lwjgl.glfw.GLFWKeyCallback;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,34 +16,14 @@ public class KeyboardHandler extends GLFWKeyCallback {
         events.put(key, new KeyEvent(key, action));
     }
 
-    public boolean isKeyDown(int keycode) {
+    public boolean isKeyHeld(int keycode) {
         KeyEvent event = events.get(keycode);
         return event != null && event.getAction() > GLFW_RELEASE;
-    }
-
-    public boolean isKeyDown(ArrayList<Integer> keycodes) {
-        for(int i = 0; i < keycodes.size(); i++) {
-            KeyEvent event = events.get(keycodes.get(i));
-            if(event != null && event.getAction() > GLFW_RELEASE) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public boolean isKeyPressed(int keycode) {
         KeyEvent event = events.get(keycode);
         return event != null && event.getAction() == GLFW_PRESS && event.isFresh();
-    }
-
-    public boolean isKeyPressed(ArrayList<Integer> keycodes) {
-        for(int i = 0; i < keycodes.size(); i++) {
-            KeyEvent event = events.get(keycodes.get(i));
-            if(event != null && event.getAction() == GLFW_PRESS && event.isFresh()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public void updateKeyEvents() {

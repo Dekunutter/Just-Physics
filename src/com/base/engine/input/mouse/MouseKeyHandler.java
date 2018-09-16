@@ -20,11 +20,11 @@ public class MouseKeyHandler extends GLFWMouseButtonCallback {
         }
     }
 
-    public boolean isLeftDown() {
+    public boolean isLeftHeld() {
         return leftPressed;
     }
 
-    public boolean isRightDown() {
+    public boolean isRightHeld() {
         return rightPressed;
     }
 
@@ -40,6 +40,24 @@ public class MouseKeyHandler extends GLFWMouseButtonCallback {
         if(rightPressed && !rightWasPressed) {
             rightWasPressed = true;
             return true;
+        }
+        return false;
+    }
+
+    public boolean isButtonHeld(int buttonCode) {
+        if(buttonCode == GLFW_MOUSE_BUTTON_1) {
+            return isLeftHeld();
+        } else if(buttonCode == GLFW_MOUSE_BUTTON_2) {
+            return isRightHeld();
+        }
+        return false;
+    }
+
+    public boolean isButtonPressed(int buttonCode) {
+        if(buttonCode == GLFW_MOUSE_BUTTON_1) {
+            return isLeftPressed();
+        } else if(buttonCode == GLFW_MOUSE_BUTTON_2) {
+            return isRightPressed();
         }
         return false;
     }

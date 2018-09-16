@@ -1,0 +1,8 @@
+package com.base.game.input;
+
+public enum InputCommand {
+    MOVEMENT_UP, MOVEMENT_DOWN, MOVEMENT_LEFT, MOVEMENT_RIGHT, MOVEMENT_IN, MOVEMENT_OUT,
+    FREEZE_CAMERA, ZOOM_CAMERA,
+    COLOUR_UP, COLOUR_DOWN,
+    SCALE_OBJECT
+}

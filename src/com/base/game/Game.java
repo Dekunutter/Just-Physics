@@ -3,18 +3,29 @@ package com.base.game;
 import com.base.engine.Engine;
 import com.base.engine.GameState;
 import com.base.engine.Time;
-import com.base.engine.input.keyboard.Keyboard;
-import com.base.engine.input.keyboard.Keys;
-import com.base.engine.input.mouse.MouseCursor;
+import com.base.engine.input.mouse.Mouse;
 import com.base.engine.physics.Integration;
+import com.base.game.input.InputCommand;
+import com.base.game.input.InputParser;
 
 import static org.lwjgl.opengl.GL11.glClearColor;
 
 public class Game extends GameState {
+    private static Game instance;
+
     private float colour, colourDirection;
     private World world;
 
-    public Game() {
+    private InputParser playerInput;
+
+    public static Game getInstance() {
+        if(instance == null) {
+            instance = new Game();
+        }
+        return instance;
+    }
+
+    private Game() {
         gameTitle = "Just Physics";
     }
 
@@ -24,19 +35,21 @@ public class Game extends GameState {
         colourDirection = 0.0f;
 
         world = new World();
+
+        playerInput = new InputParser();
     }
 
     @Override
     public void getInput() {
-        MouseCursor.getInput(Engine.window);
+        Mouse.getInput(Engine.window);
 
-        if(Keyboard.isKeyDown(Keys.getInstance().up)) {
+        if(playerInput.hold(InputCommand.COLOUR_UP)) {
             colourDirection = 1.0f;
         }
-        if(Keyboard.isKeyDown(Keys.getInstance().down)) {
+        if(playerInput.hold(InputCommand.COLOUR_DOWN)) {
             colourDirection = -1.0f;
         }
-        if(!Keyboard.isKeyDown(Keys.getInstance().up) && !Keyboard.isKeyDown(Keys.getInstance().down)) {
+        if(!playerInput.hold(InputCommand.COLOUR_UP) && !playerInput.hold(InputCommand.COLOUR_DOWN)) {
             colourDirection = 0.0f;
         }
 
@@ -45,7 +58,7 @@ public class Game extends GameState {
 
     @Override
     public void update(Integration integrationType) {
-        MouseCursor.update();
+        Mouse.update();
 
         world.update(integrationType);
 
@@ -66,6 +79,10 @@ public class Game extends GameState {
 
     public void interpolate(float alpha) {
         world.interpolate(alpha);
+    }
+
+    public InputParser getPlayerInput() {
+        return playerInput;
     }
 
     @Override

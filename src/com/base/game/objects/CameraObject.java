@@ -1,12 +1,13 @@
-package com.base.game;
+package com.base.game.objects;
 
 import com.base.engine.Camera;
 import com.base.engine.GameObject;
-import com.base.engine.input.keyboard.Keyboard;
-import com.base.engine.input.keyboard.Keys;
-import com.base.engine.input.mouse.MouseCursor;
+import com.base.engine.input.mouse.Mouse;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.body.Body;
+import com.base.game.World;
+import com.base.game.input.InputCommand;
+import com.base.game.input.InputParser;
 import org.joml.Vector3f;
 
 public class CameraObject extends GameObject {
@@ -35,47 +36,47 @@ public class CameraObject extends GameObject {
         movement.zero();
         zoomState = 0;
 
-        if(Keyboard.isKeyDown(Keys.getInstance().up))
+        if(controller.hold(InputCommand.MOVEMENT_UP))
         {
             movement.y = 1;
         }
-        else if(Keyboard.isKeyDown(Keys.getInstance().down))
+        else if(controller.hold(InputCommand.MOVEMENT_DOWN))
         {
             movement.y = -1;
         }
 
-        if(Keyboard.isKeyDown(Keys.getInstance().left))
+        if(controller.hold(InputCommand.MOVEMENT_LEFT))
         {
             movement.x = -1;
         }
-        else if(Keyboard.isKeyDown(Keys.getInstance().right))
+        else if(controller.hold(InputCommand.MOVEMENT_RIGHT))
         {
             movement.x = 1;
         }
 
-        if(Keyboard.isKeyDown(Keys.getInstance().cameraForwards))
+        if(controller.hold(InputCommand.MOVEMENT_IN))
         {
             movement.z = -1;
         }
-        else if(Keyboard.isKeyDown(Keys.getInstance().cameraBackwards))
+        else if(controller.hold(InputCommand.MOVEMENT_OUT))
         {
             movement.z = 1;
         }
 
-        if(MouseCursor.isRightDown())
+        if(controller.hold(InputCommand.FREEZE_CAMERA))
         {
-            MouseCursor.freeze();
+            InputParser.freezeMouse();
             rotating = true;
         }
         else
         {
-            MouseCursor.unfreeze();
+            InputParser.unfreezeMouse();
             rotating = false;
         }
 
-        if(MouseCursor.isScrolling())
+        if(controller.scroll(InputCommand.ZOOM_CAMERA))
         {
-            zoomState = (float) MouseCursor.getScroll() * -1.0f;
+            zoomState = (float) Mouse.getScroll() * -1.0f;
         }
     }
 

@@ -1,66 +1,26 @@
 package com.base.engine.input.keyboard;
 
-import java.util.ArrayList;
+import com.base.engine.input.Input;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Keys {
-    private static Keys keys;
-
-    public ArrayList<Integer> up, down, left, right;
-    public ArrayList<Integer> enter, space, shift, control, escape;
-    public ArrayList<Integer> cameraForwards, cameraBackwards;
-
-    //TODO: Refactor this code with key arrays moved into game package as they are game specific, not engine code
-    //TODO: Further refactor this code to be "setup" periodically by objects that have input. So a game object with movement input might provide the bindings for WASD, somehow in a singleton manner?
-    private Keys() {
-        up = new ArrayList<>();
-        down = new ArrayList<>();
-        left = new ArrayList<>();
-        right = new ArrayList<>();
-        enter = new ArrayList<>();
-        space = new ArrayList<>();
-        shift = new ArrayList<>();
-        control = new ArrayList<>();
-        escape = new ArrayList<>();
-        cameraForwards = new ArrayList<>();
-        cameraBackwards = new ArrayList<>();
-
-        up.add(GLFW_KEY_W);
-        up.add(GLFW_KEY_UP);
-
-        down.add(GLFW_KEY_S);
-        down.add(GLFW_KEY_DOWN);
-
-        left.add(GLFW_KEY_A);
-        left.add(GLFW_KEY_LEFT);
-
-        right.add(GLFW_KEY_D);
-        right.add(GLFW_KEY_RIGHT);
-
-        enter.add(GLFW_KEY_ENTER);
-
-        space.add(GLFW_KEY_SPACE);
-
-        shift.add(GLFW_KEY_LEFT_SHIFT);
-        shift.add(GLFW_KEY_RIGHT_SHIFT);
-
-        control.add(GLFW_KEY_LEFT_CONTROL);
-        control.add(GLFW_KEY_RIGHT_CONTROL);
-
-        escape.add(GLFW_KEY_ESCAPE);
-
-        cameraForwards.add(GLFW_KEY_Z);
-
-        cameraBackwards.add(GLFW_KEY_X);
-    }
-
-    public static Keys getInstance()
-    {
-        if(keys == null)
-        {
-            keys = new Keys();
-        }
-        return keys;
-    }
+    public static Input W = new Input(GLFW_KEY_W);
+    public static Input A = new Input(GLFW_KEY_A);
+    public static Input S = new Input(GLFW_KEY_S);
+    public static Input D = new Input(GLFW_KEY_D);
+    public static Input Z = new Input(GLFW_KEY_Z);
+    public static Input X = new Input(GLFW_KEY_X);
+    public static Input UP = new Input(GLFW_KEY_UP);
+    public static Input LEFT = new Input(GLFW_KEY_LEFT);
+    public static Input DOWN = new Input(GLFW_KEY_DOWN);
+    public static Input RIGHT = new Input(GLFW_KEY_RIGHT);
+    public static Input SPACE = new Input(GLFW_KEY_SPACE);
+    public static Input ESCAPE = new Input(GLFW_KEY_ESCAPE);
+    public static Input LEFT_CONTROL = new Input(GLFW_KEY_LEFT_CONTROL);
+    public static Input RIGHT_CONTROL = new Input(GLFW_KEY_RIGHT_CONTROL);
+    public static Input LEFT_ALT = new Input(GLFW_KEY_LEFT_ALT);
+    public static Input RIGHT_ALT = new Input(GLFW_KEY_RIGHT_ALT);
+    public static Input ENTER = new Input(GLFW_KEY_ENTER);
+    public static Input LEFT_SHIFT = new Input(GLFW_KEY_LEFT_SHIFT);
 }

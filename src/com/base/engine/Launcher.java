@@ -6,7 +6,7 @@ import com.base.game.Game;
 
 public class Launcher {
     public static void main(String[] args) {
-        GameState game = new Game();
+        GameState game = Game.getInstance();
 
         Debug.enableDebug();
         //Debug.enablePolygonMode();

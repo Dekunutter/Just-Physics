@@ -7,6 +7,8 @@ import com.base.engine.loop.Renderer;
 import com.base.engine.physics.Integration;
 import com.base.engine.render.Attenuation;
 import com.base.engine.render.lighting.*;
+import com.base.game.objects.CameraObject;
+import com.base.game.objects.TestObject;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -30,8 +32,10 @@ public class World implements GameLoop {
     private void initObjects() throws Exception {
         worldObjects = new ArrayList<>();
         GameObject testObject = new TestObject(this);
+        testObject.setController(Game.getInstance().getPlayerInput());
         worldObjects.add(testObject);
         CameraObject cameraObject = new CameraObject(this);
+        cameraObject.setController(Game.getInstance().getPlayerInput());
         worldObjects.add(cameraObject);
 
         AmbientLight ambientLight = new AmbientLight(new Vector3f(0.1f, 0.1f, 0.1f), 10f);
@@ -58,7 +62,9 @@ public class World implements GameLoop {
     @Override
     public void getInput() {
         for(int i = 0; i < worldObjects.size(); i++) {
-            worldObjects.get(i).getInput();
+            if(!worldObjects.get(i).isControlled()) {
+                worldObjects.get(i).getInput();
+            }
         }
     }
 

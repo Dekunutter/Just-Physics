@@ -1,6 +1,6 @@
 package com.base.engine;
 
-import com.base.engine.input.mouse.MouseCursor;
+import com.base.engine.input.mouse.Mouse;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -65,7 +65,7 @@ public class Camera {
     {
         movePosition(movement.x * Time.getDelta(), movement.y * Time.getDelta(), movement.z * Time.getDelta());
         if(rotating) {
-            Vector2f mouseRotation = MouseCursor.getDisplayVector();
+            Vector2f mouseRotation = Mouse.getDisplayVector();
             moveRotation(mouseRotation.x * Time.getDelta(), mouseRotation.y * Time.getDelta(), 0);
         }
         movePosition(0, 0, zoomState * Time.getDelta());

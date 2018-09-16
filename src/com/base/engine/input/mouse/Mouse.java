@@ -6,7 +6,7 @@ import org.joml.Vector2f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class MouseCursor {
+public class Mouse {
     private static Vector2f displayVector;
 
     private static MouseKeyHandler buttonCallback;
@@ -58,20 +58,8 @@ public class MouseCursor {
         return positionCallback.getPosition();
     }
 
-    public static boolean isLeftDown() {
-        return buttonCallback.isLeftDown();
-    }
-
-    public static boolean isRightDown() {
-        return buttonCallback.isRightDown();
-    }
-
-    public static boolean isLeftPressed() {
-        return buttonCallback.isLeftPressed();
-    }
-
-    public static boolean isRightPressed() {
-        return buttonCallback.isRightPressed();
+    public static boolean isButtonHeld(int buttonCode) {
+        return buttonCallback.isButtonHeld(buttonCode);
     }
 
     public static boolean isScrolling() {
