@@ -24,6 +24,8 @@ public class Engine implements Runnable {
     private LoopType gameLoopType;
     private Integration integrationType;
 
+    private OperatingSystem os;
+
     public static Engine getInstance() {
         if(engine == null) {
             engine = new Engine();
@@ -61,6 +63,8 @@ public class Engine implements Runnable {
         framesPassed = 30;
         hasQuit = false;
 
+        getCurrentOperatingSystem();
+
         checkVideoSettings();
 
         initDisplay();
@@ -74,14 +78,17 @@ public class Engine implements Runnable {
         cleanUp();
     }
 
-    private void checkVideoSettings() {
-        URL url = Launcher.class.getClassLoader().getResource("settings/settings.txt");
-        if(url == null) {
-            System.err.println("Video settings were not found");
-            DisplaySettings.loadDefaults();
+    private void getCurrentOperatingSystem() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        if(osName.contains("mac")) {
+            os = OperatingSystem.MAC;
         } else {
-            DisplaySettings.loadFromFile(url);
+            os = OperatingSystem.WINDOWS;
         }
+    }
+
+    private void checkVideoSettings() {
+        DisplaySettings.loadFromFile(os, gameToRun.gameTitle);
     }
 
     private void initDisplay() {
@@ -112,7 +119,7 @@ public class Engine implements Runnable {
 
     private void startGameLoop() {
         try {
-            gameToRun.start();
+                gameToRun.start();
         } catch(Exception ex) {
             //TODO: Should I close the game if there is a setup exception caught here? Like a shader failed to link?
             System.err.println("Game initialization error: " + ex.getLocalizedMessage());

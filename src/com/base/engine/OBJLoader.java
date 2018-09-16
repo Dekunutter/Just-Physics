@@ -111,6 +111,7 @@ public class OBJLoader {
         {
             list.add(line);
         }
+        br.close();
 
         return list;
     }
