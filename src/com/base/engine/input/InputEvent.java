@@ -1,10 +1,10 @@
-package com.base.engine.input.keyboard;
+package com.base.engine.input;
 
-public class KeyEvent {
+public class InputEvent {
     private final int key, action;
     private boolean isFresh;
 
-    public KeyEvent(int key, int action) {
+    public InputEvent(int key, int action) {
         this.key = key;
         this.action = action;
         isFresh = true;
