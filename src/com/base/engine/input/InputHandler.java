@@ -25,7 +25,11 @@ public class InputHandler {
         return false;
     }
 
-    public boolean scroll(List<Input> inputs) {
+    public boolean scroll() {
         return Mouse.isScrolling();
+    }
+
+    public double getScroll() {
+        return Mouse.getScroll();
     }
 }

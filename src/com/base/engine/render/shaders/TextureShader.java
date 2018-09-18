@@ -16,13 +16,9 @@ public class TextureShader extends Shader {
         shaderId = 1;
     }
 
-    public static TextureShader getInstance() {
+    public static TextureShader getInstance() throws Exception {
         if(instance == null) {
-            try {
-                instance = new TextureShader();
-            } catch(Exception ex) {
-                ex.printStackTrace();
-            }
+            instance = new TextureShader();
         }
         return instance;
     }

@@ -74,8 +74,12 @@ public class InputParser {
     }
 
     //TODO: Commands (like gestures) that dont correspond to a key int value need a better representation
-    public static boolean scroll(InputCommand command) {
-        return handler.scroll(bindings.get(command));
+    public static boolean scroll() {
+        return handler.scroll();
+    }
+
+    public static double getScroll() {
+        return handler.getScroll();
     }
 
     public static void freezeMouse() {

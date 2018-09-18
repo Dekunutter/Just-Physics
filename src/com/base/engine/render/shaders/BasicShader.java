@@ -17,13 +17,9 @@ public class BasicShader extends Shader {
         shaderId = 0;
     }
 
-    public static BasicShader getInstance() {
+    public static BasicShader getInstance() throws Exception {
         if(instance == null) {
-            try {
-                instance = new BasicShader();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+            instance = new BasicShader();
         }
         return instance;
     }

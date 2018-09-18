@@ -12,6 +12,8 @@ public class ShaderLoader  {
         try(InputStream in = classloader.getResourceAsStream(fileName);
             Scanner scanner = new Scanner(in, "UTF-8"))  {
                 result = scanner.useDelimiter("\\A").next();
+        } catch(Exception ex) {
+            throw new ShaderException("Failed to load shader at " + fileName);
         }
         return result;
     }

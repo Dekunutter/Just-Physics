@@ -2,7 +2,6 @@ package com.base.game.objects;
 
 import com.base.engine.Camera;
 import com.base.engine.GameObject;
-import com.base.engine.input.mouse.Mouse;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.body.Body;
 import com.base.game.World;
@@ -17,7 +16,7 @@ public class CameraObject extends GameObject {
     private boolean rotating;
     private float zoomState;
 
-    public CameraObject(World world) throws Exception {
+    public CameraObject(World world) {
         super(world);
 
         camera = new Camera();
@@ -74,9 +73,9 @@ public class CameraObject extends GameObject {
             rotating = false;
         }
 
-        if(controller.scroll(InputCommand.ZOOM_CAMERA))
+        if(controller.scroll())
         {
-            zoomState = (float) Mouse.getScroll() * -1.0f;
+            zoomState = (float) InputParser.getScroll() * -1.0f;
         }
     }
 

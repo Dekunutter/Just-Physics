@@ -54,8 +54,9 @@ public class DisplaySettings {
                     break;
             }
         } catch(IOException ex) {
-            System.err.println("Video settings were not found: " + ex.getLocalizedMessage());
+            System.err.print("Video settings were not found. Loading defaults. ");
             ex.printStackTrace();
+            loadDefaults();
         }
     }
 

@@ -16,13 +16,9 @@ public class LightShader extends Shader {
         shaderId = 2;
     }
 
-    public static LightShader getInstance() {
+    public static LightShader getInstance() throws Exception {
         if(instance == null) {
-            try {
-                instance = new LightShader();
-            } catch(Exception ex) {
-                ex.printStackTrace();
-            }
+            instance = new LightShader();
         }
         return instance;
     }
