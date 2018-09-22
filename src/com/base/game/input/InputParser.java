@@ -73,7 +73,6 @@ public class InputParser {
         return handler.hold(bindings.get(command));
     }
 
-    //TODO: Commands (like gestures) that dont correspond to a key int value need a better representation
     public static boolean scroll() {
         return handler.scroll();
     }

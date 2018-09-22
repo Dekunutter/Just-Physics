@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.util.Scanner;
 
 public class ShaderLoader  {
-    //TODO: Better handling for when shader files cannot be found instead of crashing with a NullPointerException
     public static String load(String fileName) throws Exception  {
         fileName = "com/base/engine/render/shaders/" + fileName;
         String result;
