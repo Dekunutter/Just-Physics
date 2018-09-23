@@ -78,6 +78,22 @@ public class Body {
         currentState.position.add(currentState.velocity.mul(Time.getDelta(), velocityOverTime));
     }
 
+    //A variation of semi-implicit Euler which calculates velocity using momentum instead of acceleration
+    //This lines up more closely with how rotational velocities are calculated, though this method is just for linear velocities
+    private void advanceSemiImplicitlyWithMomentum() {
+        Debug.println("%s    %s    %s   %s", Time.getDelta(), currentState.position, currentState.velocity, currentState.momentum);
+
+        Vector3f momentumOverTime = new Vector3f();
+        Vector3f momentumToVelocity = new Vector3f();
+        Vector3f velocityOverTime = new Vector3f();
+
+        currentState.momentum.add(force.mul(Time.getDelta(), momentumOverTime));
+        currentState.velocity.add(currentState.momentum.div(1.0f / mass, momentumToVelocity));
+        currentState.position.add(currentState.velocity.mul(Time.getDelta(), velocityOverTime));
+
+        currentState.recalculate(mass);
+    }
+
     //Fixes the issues with stiff equations that other euler methods have at the cost of requiring more object state and more complex math
     private void advanceImplicitly() {
         Debug.println("%s    %s    %s", Time.getDelta(), currentState.position, currentState.velocity);
@@ -154,29 +170,53 @@ public class Body {
         Debug.println("%s    %s    %s", Time.getDelta(), currentState.position, currentState.velocity);
 
         Derivative d0 = new Derivative();
-        Derivative d1 = calculateDerivative(currentState.position, currentState.velocity, Time.getDelta() * 0.0f, d0);
-        Derivative d2 = calculateDerivative(currentState.position, currentState.velocity, Time.getDelta() * 0.5f, d1);
-        Derivative d3 = calculateDerivative(currentState.position, currentState.velocity, Time.getDelta() * 0.5f, d2);
-        Derivative d4 = calculateDerivative(currentState.position, currentState.velocity, Time.getDelta() * 1.0f, d3);
+        Derivative d1 = calculateDerivative(currentState.velocity, Time.getDelta() * 0.0f, d0);
+        Derivative d2 = calculateDerivative(currentState.velocity, Time.getDelta() * 0.5f, d1);
+        Derivative d3 = calculateDerivative(currentState.velocity, Time.getDelta() * 0.5f, d2);
+        Derivative d4 = calculateDerivative(currentState.velocity, Time.getDelta() * 1.0f, d3);
 
         d2.add(d3).mul(2.0f);
         d4.add(d1).add(d2).mul(1.0f / 6.0f);
 
-        currentState.position.add(d4.getPosition().mul(Time.getDelta()));
-        currentState.velocity.add(d4.getVelocity().mul(Time.getDelta()));
+        currentState.position.add(d4.getVelocity().mul(Time.getDelta()));
+        currentState.velocity.add(d4.getAcceleration().mul(Time.getDelta()));
     }
 
-    private Derivative calculateDerivative(Vector3f position, Vector3f velocity, float delta, Derivative source) {
-        Vector3f newPosition = new Vector3f();
-        source.getPosition().mul(delta, newPosition);
-        newPosition.add(position);
+    //A variation of RK4 that calculates velocity from momentum instead of acceleration
+    //This lines up more closely with how rotational velocities are calculated, though this method is just for linear velocities
+    private void advanceWithRK4WithMomentum() {
+        Debug.println("%s    %s    %s", Time.getDelta(), currentState.position, currentState.velocity);
+
+        Derivative d0 = new Derivative();
+        Derivative d1 = calculateDerivativeWithMomentum(currentState.velocity, Time.getDelta() * 0.0f, d0);
+        Derivative d2 = calculateDerivativeWithMomentum(currentState.velocity, Time.getDelta() * 0.5f, d1);
+        Derivative d3 = calculateDerivativeWithMomentum(currentState.velocity, Time.getDelta() * 0.5f, d2);
+        Derivative d4 = calculateDerivativeWithMomentum(currentState.velocity, Time.getDelta() * 1.0f, d3);
+
+        d2.add(d3).mul(2.0f);
+        d4.add(d1).add(d2).mul(1.0f / 6.0f);
+
+        currentState.position.add(d4.getVelocity().mul(Time.getDelta()));
+        currentState.velocity.add(d4.getAcceleration().mul(Time.getDelta()));
+    }
+
+    private Derivative calculateDerivative(Vector3f velocity, float delta, Derivative source) {
         Vector3f newVelocity = new Vector3f();
-        source.getVelocity().mul(delta, newVelocity);
+        source.getAcceleration().mul(delta, newVelocity);
         newVelocity.add(velocity);
 
-        force.div(mass, currentState.acceleration);
+        Vector3f newAcceleration = new Vector3f();
+        force.div(mass, newAcceleration);
 
-        return new Derivative(newVelocity, currentState.acceleration);
+        return new Derivative(newVelocity, newAcceleration);
+    }
+
+    private Derivative calculateDerivativeWithMomentum(Vector3f velocity, float delta, Derivative source) {
+        Vector3f newVelocity = new Vector3f();
+        source.getAcceleration().mul(delta, newVelocity);
+        newVelocity.add(velocity);
+
+        return new Derivative(newVelocity, force);
     }
 
     public void interpolate(float alpha) {
