@@ -1,10 +1,11 @@
 package com.base.engine.physics.body;
 
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class State {
-    public Vector3f position, velocity, acceleration, momentum;
-    public Vector3f rotation;
+    public Vector3f position, velocity, angularVelocity, acceleration, momentum, angularMomentum;
+    public Quaternionf orientation, spin;
     public float scale;
 
     //Previous position required for Verlet integration
@@ -12,13 +13,16 @@ public class State {
 
     public State() {
         position = new Vector3f();
+        orientation = new Quaternionf();
+        spin = new Quaternionf();
         velocity = new Vector3f();
+        angularVelocity = new Vector3f();
         acceleration = new Vector3f();
         momentum = new Vector3f();
+        angularMomentum = new Vector3f();
         previousPosition = new Vector3f();
 
-        //TODO: Verifiy the inclusion of rotation and scale in the body state and how it affects physics?
-        rotation = new Vector3f();
+        //TODO: Verifiy the inclusion of scale in the body state and how it affects physics?
         scale = 1;
     }
 
@@ -28,38 +32,37 @@ public class State {
 
     public void copyState(State other) {
         position = new Vector3f(other.position);
+        orientation = new Quaternionf(other.orientation);
+        spin = new Quaternionf(other.spin);
         velocity = new Vector3f(other.velocity);
+        angularVelocity = new Vector3f(other.angularVelocity);
         acceleration = new Vector3f(other.acceleration);
         momentum = new Vector3f(other.momentum);
+        angularMomentum = new Vector3f(other.angularMomentum);
         previousPosition = new Vector3f(other.previousPosition);
 
-        rotation = new Vector3f(other.rotation);
         scale = other.scale;
     }
 
-    public void mul(float value) {
-        position.mul(value);
-        velocity.mul(value);
-        acceleration.mul(value);
-        momentum.mul(value);
-        previousPosition.mul(value);
+    public void interpolate(State current, State previous, float alpha) {
+        copyState(current);
+        position.lerp(previous.position, alpha);
+        orientation.slerp(previous.orientation, alpha);
+        spin.slerp(previous.spin, alpha);
+        velocity.lerp(previous.velocity, alpha);
+        angularVelocity.lerp(previous.angularVelocity, alpha);
+        acceleration.lerp(previous.acceleration, alpha);
+        momentum.lerp(previous.momentum, alpha);
+        angularMomentum.lerp(previous.angularMomentum, alpha);
+        previousPosition.lerp(previous.previousPosition, alpha);
 
-        rotation.mul(rotation);
-        scale *= value;
+        scale += (previous.scale - scale) * alpha;
     }
 
-    public void add(State other) {
-        position.add(other.position);
-        velocity.add(other.velocity);
-        acceleration.add(other.acceleration);
-        momentum.add(other.momentum);
-        previousPosition.add(other.previousPosition);
-
-        rotation.add(other.rotation);
-        scale += other.scale;
-    }
-
-    public void recalculate(float mass) {
+    public void recalculate(float mass, float inertia) {
         momentum.mul(1.0f / mass, velocity);
+
+        angularMomentum.mul(1.0f / inertia, angularVelocity);
+        orientation.normalize();
     }
 }

@@ -2,7 +2,6 @@ package com.base.game.objects;
 
 import com.base.engine.GameObject;
 import com.base.engine.OBJLoader;
-import com.base.engine.Time;
 import com.base.engine.loop.Renderer;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.body.Body;
@@ -122,6 +121,7 @@ public class TestObject extends GameObject {
         body = new Body();
         body.setPosition(0, 0, -5);
         body.addForce(new Vector3f(1.0f, 0, 0));
+        body.addTorque(new Vector3f(1.0f, 0, 0));
         body.setMass(1.0f);
 
         shader = LightShader.getInstance();
@@ -158,12 +158,6 @@ public class TestObject extends GameObject {
         body.updatePreviousState();
         body.advancePhysics(integrationType);
 
-        float rotation = body.getRotation().x + (1.5f * Time.getDelta());
-        if(rotation > 360) {
-            rotation = 0;
-        }
-        body.setRotation(rotation, rotation, rotation);
-
         body.alterScale(scaleModifier);
         if(body.getScale() > 1) {
             body.setScale(1);
@@ -183,7 +177,7 @@ public class TestObject extends GameObject {
 
         applyLighting(world.getViewMatrix());
 
-        Matrix4f modelViewMatrix = Renderer.transformation.getModelViewMatrix(body.getRenderPosition(), body.getRenderRotation(), body.getRenderScale(), world.getViewMatrix());
+        Matrix4f modelViewMatrix = Renderer.transformation.getModelViewMatrix(body.getRenderPosition(), body.getRenderOrientation(), body.getRenderScale(), world.getViewMatrix());
         shader.setUniform("modelViewMatrix", modelViewMatrix);
 
         shader.setUniform("texture_sampler", 0);

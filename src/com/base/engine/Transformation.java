@@ -1,6 +1,7 @@
 package com.base.engine;
 
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Transformation {
@@ -35,5 +36,12 @@ public class Transformation {
         modelViewMatrix.identity().translate(offset).rotateX((float) Math.toRadians(-rotation.x)).rotateY((float) Math.toRadians(-rotation.y)).rotateZ((float) Math.toRadians(-rotation.z)).scale(scale);
         Matrix4f currentView = new Matrix4f(viewMatrix);
         return currentView.mul(modelViewMatrix);
+    }
+
+    public Matrix4f getModelViewMatrix(Vector3f position, Quaternionf rotation, float scale, Matrix4f viewMatrix)
+    {
+        modelViewMatrix.identity().translate(position).rotate(rotation).scale(scale);
+        Matrix4f viewCurrent = new Matrix4f(viewMatrix);
+        return viewCurrent.mul(modelViewMatrix);
     }
 }

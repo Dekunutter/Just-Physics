@@ -3,12 +3,14 @@ package com.base.engine.physics.body;
 import com.base.engine.Debug;
 import com.base.engine.Time;
 import com.base.engine.physics.Integration;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Body {
     private State currentState, previousState, interpolatedState;
-    private Vector3f force;
+    private Vector3f force, torque;
     private float mass;
+    private float momentOfInertia;
 
     public Body() {
         currentState = new State();
@@ -16,7 +18,9 @@ public class Body {
         interpolatedState = new State();
 
         force = new Vector3f();
+        torque = new Vector3f();
         mass = 1.0f;
+        momentOfInertia = (1.0f / 6.0f) * (float) Math.pow(1, 2) * mass;
     }
 
     public void updatePreviousState() {
@@ -29,7 +33,8 @@ public class Body {
                 advanceExplicitly();
                 break;
             case SEMI_IMPLICIT:
-                advanceSemiImplicitly();
+                //advanceSemiImplicitly();
+                advanceSemiImplicitlyWithRotation();
                 break;
             case IMPLICIT:
                 advanceImplicitly();
@@ -78,20 +83,25 @@ public class Body {
         currentState.position.add(currentState.velocity.mul(Time.getDelta(), velocityOverTime));
     }
 
-    //A variation of semi-implicit Euler which calculates velocity using momentum instead of acceleration
-    //This lines up more closely with how rotational velocities are calculated, though this method is just for linear velocities
-    private void advanceSemiImplicitlyWithMomentum() {
+    //A variation of semi-implicit Euler which calculates both linear and angular velocities using momentum instead of acceleration
+    //Swapping to momentum calculations for linear velocity allows for some consistency between how velocities are calculated since angular velocity needs the momentum method
+    private void advanceSemiImplicitlyWithRotation() {
         Debug.println("%s    %s    %s   %s", Time.getDelta(), currentState.position, currentState.velocity, currentState.momentum);
 
         Vector3f momentumOverTime = new Vector3f();
         Vector3f momentumToVelocity = new Vector3f();
         Vector3f velocityOverTime = new Vector3f();
-
         currentState.momentum.add(force.mul(Time.getDelta(), momentumOverTime));
-        currentState.velocity.add(currentState.momentum.div(1.0f / mass, momentumToVelocity));
+        currentState.velocity.add(currentState.momentum.mul(1.0f / mass, momentumToVelocity));
         currentState.position.add(currentState.velocity.mul(Time.getDelta(), velocityOverTime));
 
-        currentState.recalculate(mass);
+        Vector3f angularMomentumOverTime = new Vector3f();
+        Vector3f angularMomentumToVelocity = new Vector3f();
+        currentState.angularMomentum.add(torque.mul(Time.getDelta(), angularMomentumOverTime));
+        currentState.angularVelocity.add(currentState.angularMomentum.mul(1.0f / momentOfInertia, angularMomentumToVelocity));
+        currentState.orientation.integrate(Time.getDelta(), currentState.angularVelocity.x, currentState.angularVelocity.y, currentState.angularVelocity.z);
+
+        currentState.recalculate(mass, momentOfInertia);
     }
 
     //Fixes the issues with stiff equations that other euler methods have at the cost of requiring more object state and more complex math
@@ -144,6 +154,27 @@ public class Body {
 
         changeDueToAcceleration = new Vector3f(currentState.acceleration).mul(Time.getDelta() / 2.0f);
         currentState.velocity = new Vector3f(halfVelocity).add(changeDueToAcceleration);
+    }
+
+    //Alternative implementation of velocity verlet
+    //Has a different, more involved means of calculating the velocity
+    private void advanceWithVelocityVerletAlternative() {
+        Vector3f previousAcceleration = new Vector3f(currentState.acceleration);
+        Vector3f halfAcceleration = new Vector3f();
+        Vector3f halfAccelerationOverTime = new Vector3f();
+        Vector3f averageAcceleration = new Vector3f();
+
+        previousAcceleration.mul(0.5f, halfAcceleration);
+        halfAcceleration.mul(Time.getDelta() * Time.getDelta(), halfAccelerationOverTime);
+        Vector3f velocityOverTime = new Vector3f();
+        currentState.velocity.mul(Time.getDelta(), velocityOverTime);
+        currentState.position.add(velocityOverTime.add(halfAccelerationOverTime));
+
+        force.div(mass, currentState.acceleration);
+
+        previousAcceleration.add(currentState.acceleration, averageAcceleration);
+        averageAcceleration.div(2);
+        currentState.velocity.add(averageAcceleration.mul(Time.getDelta()));
     }
 
     //A time-corrected version of Verlet which grants higher stability for non-fixed time steps at slightly most cost
@@ -220,14 +251,7 @@ public class Body {
     }
 
     public void interpolate(float alpha) {
-        interpolatedState.copyState(currentState);
-        interpolatedState.mul(alpha);
-
-        State tempPreviousState = new State(previousState);
-        tempPreviousState.mul(1.0f - alpha);
-
-        interpolatedState.add(tempPreviousState);
-
+        interpolatedState.interpolate(currentState, previousState, alpha);
         //Debug.println("interpolated %s    %s    %s", alpha, interpolatedState.position, interpolatedState.velocity);
     }
 
@@ -239,6 +263,10 @@ public class Body {
         this.force.add(force);
     }
 
+    public void addTorque(Vector3f torque) {
+        this.torque.add(torque);
+    }
+
     public Vector3f getPosition() {
         return currentState.position;
     }
@@ -246,14 +274,6 @@ public class Body {
     public void setPosition(float x, float y, float z) {
         currentState.position.set(x, y, z);
         currentState.previousPosition.set(x, y, z);
-    }
-
-    public Vector3f getRotation() {
-        return currentState.rotation;
-    }
-
-    public void setRotation(float x, float y, float z) {
-        currentState.rotation.set(x, y, z);
     }
 
     public float getScale() {
@@ -272,8 +292,8 @@ public class Body {
         return interpolatedState.position;
     }
 
-    public Vector3f getRenderRotation() {
-        return interpolatedState.rotation;
+    public Quaternionf getRenderOrientation() {
+        return interpolatedState.orientation;
     }
 
     public float getRenderScale() {
