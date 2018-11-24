@@ -4,7 +4,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class State {
-    public Vector3f position, velocity, angularVelocity, acceleration, momentum, angularMomentum;
+    public Vector3f position, velocity, angularVelocity, acceleration, angularAcceleration, momentum, angularMomentum;
     public Quaternionf orientation, spin;
     public float scale;
 
@@ -18,6 +18,7 @@ public class State {
         velocity = new Vector3f();
         angularVelocity = new Vector3f();
         acceleration = new Vector3f();
+        angularAcceleration = new Vector3f();
         momentum = new Vector3f();
         angularMomentum = new Vector3f();
         previousPosition = new Vector3f();
@@ -37,6 +38,7 @@ public class State {
         velocity = new Vector3f(other.velocity);
         angularVelocity = new Vector3f(other.angularVelocity);
         acceleration = new Vector3f(other.acceleration);
+        angularAcceleration = new Vector3f(other.angularAcceleration);
         momentum = new Vector3f(other.momentum);
         angularMomentum = new Vector3f(other.angularMomentum);
         previousPosition = new Vector3f(other.previousPosition);
@@ -52,6 +54,7 @@ public class State {
         velocity.lerp(previous.velocity, alpha);
         angularVelocity.lerp(previous.angularVelocity, alpha);
         acceleration.lerp(previous.acceleration, alpha);
+        angularAcceleration.lerp(previous.angularAcceleration, alpha);
         momentum.lerp(previous.momentum, alpha);
         angularMomentum.lerp(previous.angularMomentum, alpha);
         previousPosition.lerp(previous.previousPosition, alpha);
