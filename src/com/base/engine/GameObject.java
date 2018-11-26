@@ -44,4 +44,8 @@ public abstract class GameObject implements GameLoop {
     public void setController(InputParser playerInput) {
         controller = playerInput;
     }
+
+    public Body getBody() {
+        return body;
+    }
 }

@@ -3,11 +3,13 @@ package com.base.engine.physics.body;
 import com.base.engine.Debug;
 import com.base.engine.Time;
 import com.base.engine.physics.Integration;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Body {
     private State currentState, previousState, interpolatedState;
+    protected Matrix4f transform;
     private Vector3f force, torque;
     private float mass;
     private float momentOfInertia;
@@ -16,6 +18,8 @@ public class Body {
         currentState = new State();
         previousState = new State();
         interpolatedState = new State();
+
+        transform = new Matrix4f();
 
         force = new Vector3f();
         torque = new Vector3f();
@@ -321,6 +325,11 @@ public class Body {
         this.torque.add(torque);
     }
 
+    public void clearForces() {
+        force.zero();
+        torque.zero();
+    }
+
     public Vector3f getVelocityAtPoint(Vector3f point) {
         Vector3f relativePosition = new Vector3f();
         Vector3f torque = new Vector3f();
@@ -353,6 +362,10 @@ public class Body {
         currentState.scale = newScale;
     }
 
+    public Quaternionf getOrientation() {
+        return currentState.orientation;
+    }
+
     public Vector3f getRenderPosition() {
         return interpolatedState.position;
     }
@@ -363,5 +376,21 @@ public class Body {
 
     public float getRenderScale() {
         return interpolatedState.scale;
+    }
+
+    public void updateMatrix() {
+        transform.identity();
+        transform.translate(currentState.position);
+        transform.rotate(currentState.orientation);
+        transform.scale(currentState.scale);
+    }
+
+    public Matrix4f getWorldTransform() {
+        return transform;
+    }
+
+    public Matrix4f getLocalTransform() {
+        Matrix4f local = new Matrix4f();
+        return transform.invertAffine(local);
     }
 }

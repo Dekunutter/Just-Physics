@@ -120,10 +120,11 @@ public class TestObject extends GameObject {
 
         body = new Body();
         body.setPosition(0, 0, -5);
-        body.addForce(new Vector3f(1.0f, 0, 0));
-        body.addTorque(new Vector3f(1.0f, 0, 0));
+        //body.addForce(new Vector3f(1.0f, 0, 0));
+        //body.addTorque(new Vector3f(1.0f, 0, 0));
         //body.addForce(new Vector3f(1.0f, 0, 0), new Vector3f(body.getPosition()).sub(0, 0.5f, -0.5f));
         body.setMass(1.0f);
+        body.updateMatrix();
 
         shader = LightShader.getInstance();
         shader.createUniform("projectionMatrix");
@@ -163,6 +164,9 @@ public class TestObject extends GameObject {
         if(body.getScale() > 1) {
             body.setScale(1);
         }
+
+        body.updateMatrix();
+        body.clearForces();
     }
 
     @Override
