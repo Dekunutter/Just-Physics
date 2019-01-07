@@ -1,5 +1,6 @@
 package com.base.engine.physics.body;
 
+import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -62,10 +63,9 @@ public class State {
         scale += (previous.scale - scale) * alpha;
     }
 
-    public void recalculate(float mass, float inertia) {
-        momentum.mul(1.0f / mass, velocity);
-
-        angularMomentum.mul(1.0f / inertia, angularVelocity);
+    public void recalculate(float inverseMass, Matrix3f inverseInertiaTensor) {
+        momentum.mul(inverseMass, velocity);
+        inverseInertiaTensor.transform(angularMomentum, angularVelocity);
         orientation.normalize();
     }
 }
