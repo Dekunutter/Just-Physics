@@ -3,16 +3,25 @@ package com.base.engine.physics.body;
 import com.base.engine.Debug;
 import com.base.engine.Time;
 import com.base.engine.physics.Integration;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class Body {
     private State currentState, previousState, interpolatedState;
     protected Matrix4f transform;
     private Vector3f force, torque;
-    private float mass;
+    private float mass, inverseMass, density;
     private float momentOfInertia;
+    private Matrix3f inertiaTensor, inverseInertiaTensor;
+
+    private final LinkedList<Vector3f> vertices;
+    private final ArrayList<Edge> edges;
+    private final ArrayList<Face> faces;
 
     public Body() {
         currentState = new State();
@@ -24,8 +33,19 @@ public class Body {
         force = new Vector3f();
         torque = new Vector3f();
         mass = 1.0f;
-        //TODO: Create proper inertia tensor calculations. Currently this is just the inertia of the cube we are using and nothing more. Proper inerita needs a 3x3 Matrix
-        momentOfInertia = (1.0f / 6.0f) * (float) Math.pow(1, 2) * mass;
+        if(mass != 0) {
+            inverseMass = 1.0f / mass;
+        }
+        density = 1.0f;
+        //TODO: Create proper inertia tensor calculations. Currently this is just the inertia of the cube we are using and nothing more. Proper inertia needs a 3x3 Matrix
+        momentOfInertia = (1.0f / 6.0f) * (float) Math.pow(1, 2) * (float) Math.pow(1, 2) * mass;
+        inertiaTensor = calculateInertiaTensor();
+        inverseInertiaTensor = new Matrix3f(inertiaTensor);
+        inertiaTensor.invert(inverseInertiaTensor);
+
+        vertices = new LinkedList<>();
+        edges = new ArrayList<>();
+        faces = new ArrayList<>();
     }
 
     public void updatePreviousState() {
@@ -123,13 +143,13 @@ public class Body {
         currentState.momentum.add(force.mul(Time.getDelta(), momentumOverTime));
         currentState.angularMomentum.add(torque.mul(Time.getDelta(), angularMomentumOverTime));
 
-        currentState.velocity.add(currentState.momentum.mul(1.0f / mass, momentumToVelocity));
-        currentState.angularVelocity.add(currentState.angularMomentum.mul(1.0f / momentOfInertia, angularMomentumToVelocity));
+        currentState.velocity.add(currentState.momentum.mul(inverseMass, momentumToVelocity));
+        currentState.angularVelocity.add(transformInverseInertiaToWorld().transform(currentState.angularMomentum, angularMomentumToVelocity));
 
         currentState.position.add(currentState.velocity.mul(Time.getDelta(), velocityOverTime));
         currentState.orientation.integrate(Time.getDelta(), currentState.angularVelocity.x, currentState.angularVelocity.y, currentState.angularVelocity.z);
 
-        currentState.recalculate(mass, momentOfInertia);
+        currentState.recalculate(inverseMass, transformInverseInertiaToWorld());
     }
 
     //Fixes the issues with stiff equations that other euler methods have at the cost of requiring more object state and more complex math
@@ -306,6 +326,19 @@ public class Body {
         this.mass = mass;
     }
 
+    public float getMass() {
+        return mass;
+    }
+
+    public float getInverseMass() {
+        return inverseMass;
+    }
+
+    //TODO: Calculate at initialization, not on each call
+    public float getInervseInertia() {
+        return 1.0f / momentOfInertia;
+    }
+
     public void addForce(Vector3f force) {
         this.force.add(force);
     }
@@ -335,6 +368,7 @@ public class Body {
         Vector3f torque = new Vector3f();
         Vector3f velocity = new Vector3f();
 
+        //TODO: Could use transform matrix here right?
         point.sub(currentState.position, relativePosition);
         currentState.angularVelocity.cross(relativePosition, torque);
         currentState.velocity.add(torque, velocity);
@@ -392,5 +426,28 @@ public class Body {
     public Matrix4f getLocalTransform() {
         Matrix4f local = new Matrix4f();
         return transform.invertAffine(local);
+    }
+
+    private Matrix3f calculateInertiaTensor() {
+        float extentX = 4.0f * (float) Math.pow(2, 2);
+        float extentY = 4.0f * (float) Math.pow(2, 2);
+        float extentZ = 4.0f * (float) Math.pow(2, 2);
+        //mass = 8.0f * extentX * extentY * extentZ * density;
+        float x = (1.0f / 12.0f) * mass * (extentY + extentZ);
+        float y = (1.0f / 12.0f) * mass * (extentX + extentZ);
+        float z = (1.0f / 12.0f) * mass * (extentX + extentY);
+        Matrix3f inertia = new Matrix3f(x, 0.0f, 0.0f, 0.0f, y, 0.0f, 0.0f, 0.0f, z);
+
+        return inertia;
+    }
+
+    public Matrix3f transformInverseInertiaToWorld() {
+        Matrix3f rotationTransform = new Matrix3f();
+        Matrix3f worldInertia = new Matrix3f();
+
+        transform.get3x3(rotationTransform);
+        inverseInertiaTensor.mul(rotationTransform, worldInertia);
+        worldInertia.mul(rotationTransform.transpose());
+        return worldInertia;
     }
 }
