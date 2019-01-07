@@ -109,7 +109,7 @@ public class Body {
         currentState.orientation.integrate(Time.getDelta(), currentState.angularVelocity.x, currentState.angularVelocity.y, currentState.angularVelocity.z);
 
         force.div(mass, currentState.acceleration);
-        torque.div(momentOfInertia, currentState.angularAcceleration);
+        transformInverseInertiaToWorld().transform(torque, currentState.angularAcceleration);
 
         currentState.velocity.add(currentState.acceleration.mul(Time.getDelta(), accelerationOverTime));
         currentState.angularVelocity.add(currentState.angularAcceleration.mul(Time.getDelta(), angularAccelerationOverTime));
@@ -171,7 +171,7 @@ public class Body {
         Debug.println("%s    %s    %s", Time.getDelta(), currentState.position, currentState.velocity);
 
         force.div(mass, currentState.acceleration);
-        torque.div(momentOfInertia, currentState.angularAcceleration);
+        transformInverseInertiaToWorld().transform(torque, currentState.angularAcceleration);
 
         Vector3f velocityOverTime = new Vector3f(currentState.velocity).mul(Time.getDelta());
         Vector3f accelerationOverTime = new Vector3f(currentState.acceleration).mul(Time.getDelta());
