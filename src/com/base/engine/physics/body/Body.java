@@ -15,8 +15,7 @@ public class Body {
     private State currentState, previousState, interpolatedState;
     protected Matrix4f transform;
     private Vector3f force, torque;
-    private float mass, inverseMass, density;
-    private float momentOfInertia;
+    private float mass, inverseMass;
     private Matrix3f inertiaTensor, inverseInertiaTensor;
 
     private final LinkedList<Vector3f> vertices;
@@ -36,9 +35,6 @@ public class Body {
         if(mass != 0) {
             inverseMass = 1.0f / mass;
         }
-        density = 1.0f;
-        //TODO: Create proper inertia tensor calculations. Currently this is just the inertia of the cube we are using and nothing more. Proper inertia needs a 3x3 Matrix
-        momentOfInertia = (1.0f / 6.0f) * (float) Math.pow(1, 2) * (float) Math.pow(1, 2) * mass;
         inertiaTensor = calculateInertiaTensor();
         inverseInertiaTensor = new Matrix3f(inertiaTensor);
         inertiaTensor.invert(inverseInertiaTensor);
@@ -334,9 +330,8 @@ public class Body {
         return inverseMass;
     }
 
-    //TODO: Calculate at initialization, not on each call
-    public float getInervseInertia() {
-        return 1.0f / momentOfInertia;
+    public Matrix3f getInervseInertia() {
+        return inverseInertiaTensor;
     }
 
     public void addForce(Vector3f force) {
@@ -432,12 +427,10 @@ public class Body {
         float extentX = 4.0f * (float) Math.pow(2, 2);
         float extentY = 4.0f * (float) Math.pow(2, 2);
         float extentZ = 4.0f * (float) Math.pow(2, 2);
-        //mass = 8.0f * extentX * extentY * extentZ * density;
         float x = (1.0f / 12.0f) * mass * (extentY + extentZ);
         float y = (1.0f / 12.0f) * mass * (extentX + extentZ);
         float z = (1.0f / 12.0f) * mass * (extentX + extentY);
         Matrix3f inertia = new Matrix3f(x, 0.0f, 0.0f, 0.0f, y, 0.0f, 0.0f, 0.0f, z);
-
         return inertia;
     }
 
