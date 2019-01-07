@@ -1,5 +1,7 @@
 package com.base.engine;
 
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -54,6 +56,10 @@ public class Debug {
                 args[i] = ((Vector3f) args[i]).toString(formatter);
             } else if (args[i] instanceof Vector4f) {
                 args[i] = ((Vector4f) args[i]).toString(formatter);
+            } else if (args[i] instanceof Matrix3f) {
+                args[i] = ((Matrix3f) args[i]).toString(formatter);
+            } else if (args[i] instanceof Matrix4f) {
+                args[i] = ((Matrix4f) args[i]).toString(formatter);
             } else {
             }
         }
