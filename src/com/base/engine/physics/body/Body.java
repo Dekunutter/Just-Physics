@@ -1,6 +1,7 @@
 package com.base.engine.physics.body;
 
 import com.base.engine.Debug;
+import com.base.engine.OBJLoader;
 import com.base.engine.Time;
 import com.base.engine.physics.Integration;
 import org.joml.Matrix3f;
@@ -414,6 +415,7 @@ public class Body {
         transform.scale(currentState.scale);
     }
 
+    //TODO: Verify that I have the transforms done the right-way around. I haven't properly tested that I am converting from local-to-world or vice versa
     public Matrix4f getWorldTransform() {
         return transform;
     }
@@ -443,4 +445,116 @@ public class Body {
         worldInertia.mul(rotationTransform.transpose());
         return worldInertia;
     }
+
+    //TODO: Separate collision information into separate object?
+    public void loadCollisionData(String reference) {
+        if(reference == null || reference.isEmpty()) {
+            return;
+        }
+
+        try {
+            OBJLoader.populateCollisionData("res/collisions/" + reference, this);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void addVertex(Vector3f vertex) {
+        vertices.add(vertex);
+    }
+
+    public void addFace(Face face) {
+        faces.add(face);
+    }
+
+    public Face getFace(int index) {
+        return faces.get(index);
+    }
+
+    public boolean containsEdge(Edge edge) {
+        return edges.contains(edge);
+    }
+
+    public void addEdge(Edge edge) {
+        edges.add(edge);
+    }
+
+    public ArrayList<Edge> getEdges() {
+        return edges;
+    }
+
+    public Edge getEdge(int index) {
+        return edges.get(index);
+    }
+
+    public int getEdgeIndex(Edge edge) {
+        return edges.indexOf(edge);
+    }
+
+    public int getFaceCount() {
+        return faces.size();
+    }
+
+    //TODO: Verify transform matrix usage in these functions. Am I using it properly for when I only want rotation for example?
+    public Vector3f getOrientatedFaceNormal(int index) {
+        Vector3f rotatedNormal = new Vector3f();
+        faces.get(index).getNormal().mulPosition(transform, rotatedNormal);
+        rotatedNormal.normalize();
+        return rotatedNormal;
+    }
+
+    public Vector3f getSupport(Vector3f axis) {
+        float distance = -Float.MAX_VALUE;
+        Vector3f furthest = null;
+        for(int i = 0; i < vertices.size(); i++) {
+            Vector3f newVertex = new Vector3f(vertices.get(i));
+            newVertex.mulPosition(transform);
+
+            float projection = newVertex.dot(axis);
+            if(projection > distance) {
+                distance = projection;
+                furthest = new Vector3f(newVertex);
+            }
+        }
+        return furthest;
+    }
+
+    public Vector3f getTranslatedEdgeDirection(int index) {
+        Edge edge = edges.get(index);
+
+        Vector3f direction = new Vector3f();
+
+        edge.getPointB().sub(edge.getPointA(), direction);
+        direction.mulPosition(transform);
+        direction.normalize();
+        return direction;
+    }
+
+    public ArrayList<Vector3f> getTransformedVerticesOfFace(Face face) {
+        ArrayList<Vector3f> results = new ArrayList<>();
+        for(int i = 0; i < face.getEdgeIndices().size(); i++) {
+            Vector3f point = new Vector3f();
+            edges.get(face.getEdgeIndices().get(i)).getPointA().mulPosition(transform, point);
+            results.add(point);
+        }
+        return results;
+    }
+
+    public ArrayList<Edge> getEdgesOfFace(int faceIndex) {
+        ArrayList<Edge> results = new ArrayList<>();
+        for(int i = 0; i < faces.get(faceIndex).getEdgeIndices().size(); i++) {
+            results.add(edges.get(faces.get(faceIndex).getEdgeIndices().get(i)));
+        }
+        return results;
+    }
+
+    public ArrayList<Vector3f> getVerticesOfFace(Face face) {
+        ArrayList<Vector3f> results = new ArrayList<>();
+        for(int i = 0; i < face.getEdgeIndices().size(); i++) {
+            results.add(edges.get(face.getEdgeIndices().get(i)).getPointA());
+        }
+        return results;
+    }
+
 }

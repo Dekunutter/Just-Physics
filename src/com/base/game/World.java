@@ -5,7 +5,6 @@ import com.base.engine.GameObject;
 import com.base.engine.loop.GameLoop;
 import com.base.engine.loop.Renderer;
 import com.base.engine.physics.Integration;
-import com.base.engine.physics.springs.BallJoint;
 import com.base.engine.render.Attenuation;
 import com.base.engine.render.lighting.*;
 import com.base.game.objects.CameraObject;
@@ -26,20 +25,16 @@ public class World implements GameLoop {
         cameras = new ArrayList<>();
 
         initObjects();
-
-
     }
 
     private void initObjects() throws Exception {
         worldObjects = new ArrayList<>();
-        GameObject testObject = new TestObject(this);
+        TestObject testObject = new TestObject(this, new Vector3f(0, 0, -5));
         testObject.setController(Game.getInstance().getPlayerInput());
         worldObjects.add(testObject);
         CameraObject cameraObject = new CameraObject(this);
         cameraObject.setController(Game.getInstance().getPlayerInput());
         worldObjects.add(cameraObject);
-        BallJoint testJoint = new BallJoint(this, new Vector3f(0, 1.0f, -5.0f), new Vector3f(0, 0.5f, 0f), 0.9f, 0.1f, testObject.getBody());
-        worldObjects.add(testJoint);
 
         AmbientLight ambientLight = new AmbientLight(new Vector3f(0.1f, 0.1f, 0.1f), 10f);
         lights.put(ambientLight);

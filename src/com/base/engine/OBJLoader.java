@@ -1,5 +1,8 @@
 package com.base.engine;
 
+import com.base.engine.physics.body.Body;
+import com.base.engine.physics.body.Edge;
+import com.base.engine.physics.body.Face;
 import com.base.engine.render.IndexFace;
 import com.base.engine.render.IndexGroup;
 import com.base.engine.render.Mesh;
@@ -102,13 +105,51 @@ public class OBJLoader {
         }
     }
 
-    private static List<String> readAllLinesFromFile(String filename) throws Exception
-    {
+    public static void populateCollisionData(String filename, Body object) throws Exception {
+        List<String> lines = readAllLinesFromFile(filename);
+
+        List<Vector3f> vertices = new ArrayList<>();
+        List<Vector2f> texCoords = new ArrayList<>();
+        List<Vector3f> normals = new ArrayList<>();
+        List<IndexFace> faces = new ArrayList<>();
+
+        populateDataLists(lines, vertices, texCoords, normals, faces);
+
+        for(IndexFace face : faces) {
+            Face faceObject = new Face();
+            IndexGroup[] faceIndices = face.getFaceIndices();
+            int j = 1;
+            Vector3f[] vertexNormals = new Vector3f[faceIndices.length];
+            for(int i = 0; i < faceIndices.length; i++) {
+                object.addVertex(vertices.get(faceIndices[i].vertex));
+                vertexNormals[i] = normals.get(faceIndices[i].normal);
+
+                if(j >= faceIndices.length) {
+                    j = 0;
+                }
+                Edge edge = new Edge(vertices.get(faceIndices[i].vertex), vertices.get(faceIndices[j].vertex));
+                int index = -1;
+                if(!object.containsEdge(edge)) {
+                    object.addEdge(edge);
+                    index = object.getEdges().size() - 1;
+                }
+                else {
+                    index = object.getEdgeIndex(edge);
+                }
+                faceObject.addEdgeIndex(index);
+                object.getEdges().get(index).addFace(object.getFaceCount());
+                j++;
+            }
+            faceObject.setNormal(normals.get(faceIndices[0].normal));
+            object.addFace(faceObject);
+        }
+    }
+
+    private static List<String> readAllLinesFromFile(String filename) throws Exception {
         List<String> list = new ArrayList<>();
         BufferedReader br = FileLoader.loadFileFromResources(filename);
         String line;
-        while((line = br.readLine()) != null)
-        {
+        while((line = br.readLine()) != null) {
             list.add(line);
         }
         br.close();
