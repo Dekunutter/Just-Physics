@@ -133,15 +133,13 @@ public class Body {
 
         Vector3f momentumOverTime = new Vector3f();
         Vector3f angularMomentumOverTime = new Vector3f();
-        Vector3f momentumToVelocity = new Vector3f();
-        Vector3f angularMomentumToVelocity = new Vector3f();
         Vector3f velocityOverTime = new Vector3f();
 
         currentState.momentum.add(force.mul(Time.getDelta(), momentumOverTime));
         currentState.angularMomentum.add(torque.mul(Time.getDelta(), angularMomentumOverTime));
 
-        currentState.velocity.add(currentState.momentum.mul(inverseMass, momentumToVelocity));
-        currentState.angularVelocity.add(transformInverseInertiaToWorld().transform(currentState.angularMomentum, angularMomentumToVelocity));
+        currentState.momentum.mul(inverseMass, currentState.velocity);
+        transformInverseInertiaToWorld().transform(currentState.angularMomentum, currentState.angularVelocity);
 
         currentState.position.add(currentState.velocity.mul(Time.getDelta(), velocityOverTime));
         currentState.orientation.integrate(Time.getDelta(), currentState.angularVelocity.x, currentState.angularVelocity.y, currentState.angularVelocity.z);
