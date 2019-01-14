@@ -362,8 +362,7 @@ public class Body {
         Vector3f torque = new Vector3f();
         Vector3f velocity = new Vector3f();
 
-        //TODO: Could use transform matrix here right?
-        point.sub(currentState.position, relativePosition);
+        point.mulPosition(getLocalTransform(), relativePosition);
         currentState.angularVelocity.cross(relativePosition, torque);
         currentState.velocity.add(torque, velocity);
         return velocity;
@@ -495,6 +494,7 @@ public class Body {
     }
 
     //TODO: Verify transform matrix usage in these functions. Am I using it properly for when I only want rotation for example?
+    //TODO: I think I need to use the local transform here (and in the other functions), not the global like I currently am?
     public Vector3f getOrientatedFaceNormal(int index) {
         Vector3f rotatedNormal = new Vector3f();
         faces.get(index).getNormal().mulPosition(transform, rotatedNormal);
