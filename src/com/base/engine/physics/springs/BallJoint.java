@@ -9,16 +9,18 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 //TODO: Should be a different abstract type entirely and be stored separately from objects in the world, might be useful when updating to have springs update first, then objects
+//I should bare in mind that springs might change what objects they are attached to, so adding springs directly to objects would be a bad idea, further enforcing them to be something declared separately to gameobjects
 public class BallJoint extends GameObject {
-    private Vector3f position, attachedAt;
+    private Vector3f position, restLength, attachedAt;
     private Matrix4f transform;
     private float elasticity, damping;
     private Body attachedTo;
 
-    public BallJoint(World world, Vector3f position, Vector3f attachedPosition, float elasticity, float damping, Body attachTo) {
+    public BallJoint(World world, Vector3f position, Vector3f restLength, Vector3f attachedPosition, float elasticity, float damping, Body attachTo) {
         super(world);
 
         this.position = position;
+        this.restLength = restLength;
         transform = new Matrix4f();
         this.attachedAt = attachedPosition;
         this.elasticity = elasticity;
@@ -35,15 +37,16 @@ public class BallJoint extends GameObject {
 
     }
 
-    //TODO: Fix issues with rotational velocity building up instead of dampening like linear when a rotation is applied and the spring is pulling the object simultaneously
     @Override
     public void update(Integration integrationType) {
         Vector3f worldPoint = new Vector3f();
+        Vector3f currentLength = new Vector3f();
         Vector3f difference = new Vector3f();
         Vector3f force = new Vector3f();
 
         attachedAt.mulPosition(attachedTo.getWorldTransform(), worldPoint);
-        position.sub(worldPoint, difference);
+        position.sub(worldPoint, currentLength);
+        currentLength.sub(restLength, difference);
         difference.mul(elasticity);
 
         Vector3f pointVelocity = attachedTo.getVelocityAtPoint(worldPoint);

@@ -412,7 +412,6 @@ public class Body {
         transform.scale(currentState.scale);
     }
 
-    //TODO: Verify that I have the transforms done the right-way around. I haven't properly tested that I am converting from local-to-world or vice versa
     public Matrix4f getWorldTransform() {
         return transform;
     }
