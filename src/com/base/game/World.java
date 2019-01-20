@@ -9,7 +9,6 @@ import com.base.engine.render.Attenuation;
 import com.base.engine.render.lighting.*;
 import com.base.game.objects.CameraObject;
 import com.base.game.objects.TestObject;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -18,7 +17,7 @@ public class World implements GameLoop {
     private LightMap lights;
     private ArrayList<Camera> cameras;
     private ArrayList<GameObject> worldObjects;
-    private Matrix4f projectionMatrix, viewMatrix;
+    private TestObject testObject;
 
     public World() throws Exception {
         lights = new LightMap();
@@ -29,7 +28,7 @@ public class World implements GameLoop {
 
     private void initObjects() throws Exception {
         worldObjects = new ArrayList<>();
-        TestObject testObject = new TestObject(this, new Vector3f(0, 0, -5));
+        testObject = new TestObject(new Vector3f(0, 0, -5));
         testObject.setController(Game.getInstance().getPlayerInput());
         worldObjects.add(testObject);
         CameraObject cameraObject = new CameraObject(this);
@@ -87,7 +86,7 @@ public class World implements GameLoop {
             calculateProjectionAndView(cameras.get(i));
 
             for (int j = 0; j < worldObjects.size(); j++) {
-                worldObjects.get(j).render();
+                worldObjects.get(j).render(lights);
             }
         }
     }
@@ -109,16 +108,8 @@ public class World implements GameLoop {
     }
 
     public void calculateProjectionAndView(Camera camera) {
-        projectionMatrix = Renderer.transformation.getProjectionMatrix(Renderer.FIELD_OF_VIEW, Renderer.Z_NEAR, Renderer.Z_FAR);
-        viewMatrix = Renderer.transformation.getViewMatrix(camera);
-    }
-
-    public Matrix4f getProjectionMatrix() {
-        return projectionMatrix;
-    }
-
-    public Matrix4f getViewMatrix() {
-        return viewMatrix;
+        Renderer.transformation.calculateProjectionMatrix(Renderer.FIELD_OF_VIEW, Renderer.Z_NEAR, Renderer.Z_FAR);
+        Renderer.transformation.calculateViewMatrix(camera);
     }
 
     @Override

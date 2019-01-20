@@ -1,36 +1,35 @@
 package com.base.engine;
 
 import com.base.engine.loop.GameLoop;
+import com.base.engine.loop.Renderer;
 import com.base.engine.physics.body.Body;
 import com.base.engine.render.Mesh;
 import com.base.engine.render.Shader;
+import com.base.engine.render.lighting.LightMap;
 import com.base.game.input.InputParser;
-import com.base.game.World;
-import org.joml.Matrix4f;
 
 public abstract class GameObject implements GameLoop {
-    protected World world;
     protected static Shader shader;
     protected Body body;
     protected Mesh mesh;
     protected InputParser controller;
 
-    protected GameObject(World world) {
-        this.world = world;
+    protected GameObject() {
+
     }
 
-    protected void applyLighting(Matrix4f viewMatrix) {
-        shader.setUniform("ambientLight", world.getLights().getAmbientLight().getIntensity());
-        shader.setUniform("specularPower", world.getLights().getAmbientLight().getSpecularPower());
+    protected void applyLighting(LightMap lights) {
+        shader.setUniform("ambientLight", lights.getAmbientLight().getIntensity());
+        shader.setUniform("specularPower", lights.getAmbientLight().getSpecularPower());
 
-        for(int i = 0; i < world.getLights().getPointLightListSize(); i++) {
-            shader.setUniform("pointLights", world.getLights().getPointLights()[i].getViewPosition(viewMatrix), i);
+        for(int i = 0; i < lights.getPointLightListSize(); i++) {
+            shader.setUniform("pointLights", lights.getPointLights()[i].getViewPosition(Renderer.transformation.getViewMatrix()), i);
         }
 
-        shader.setUniform("directionalLight", world.getLights().getDirectionalLight().getViewPosition(viewMatrix));
+        shader.setUniform("directionalLight", lights.getDirectionalLight().getViewPosition(Renderer.transformation.getViewMatrix()));
 
-        for(int i = 0; i < world.getLights().getSpotLightListSize(); i++) {
-            shader.setUniform("spotLights", world.getLights().getSpotLights()[i].getViewPosition(viewMatrix), i);
+        for(int i = 0; i < lights.getSpotLightListSize(); i++) {
+            shader.setUniform("spotLights", lights.getSpotLights()[i].getViewPosition(Renderer.transformation.getViewMatrix()), i);
         }
     }
 
@@ -48,4 +47,11 @@ public abstract class GameObject implements GameLoop {
     public Body getBody() {
         return body;
     }
+
+    @Override
+    public void render() {
+        render(new LightMap());
+    }
+
+    public abstract void render(LightMap lights);
 }

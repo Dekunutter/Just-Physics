@@ -8,10 +8,10 @@ import com.base.engine.physics.body.Body;
 import com.base.engine.render.Material;
 import com.base.engine.render.Texture;
 import com.base.engine.render.TextureLoader;
+import com.base.engine.render.lighting.LightMap;
 import com.base.engine.render.lighting.PointLight;
 import com.base.engine.render.lighting.SpotLight;
 import com.base.engine.render.shaders.LightShader;
-import com.base.game.World;
 import com.base.game.input.InputCommand;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -19,8 +19,8 @@ import org.joml.Vector3f;
 public class TestObject extends GameObject {
     private float scaleModifier;
 
-    public TestObject(World world, Vector3f position) throws Exception {
-        super(world);
+    public TestObject(Vector3f position) throws Exception {
+        super();
 
         body = new Body();
         body.loadCollisionData("cube_collision.obj");
@@ -80,14 +80,14 @@ public class TestObject extends GameObject {
     }
 
     @Override
-    public void render() {
+    public void render(LightMap lights) {
         shader.bind();
 
-        shader.setUniform("projectionMatrix", world.getProjectionMatrix());
+        shader.setUniform("projectionMatrix", Renderer.transformation.getProjectionMatrix());
 
-        applyLighting(world.getViewMatrix());
+        applyLighting(lights);
 
-        Matrix4f modelViewMatrix = Renderer.transformation.getModelViewMatrix(body.getRenderPosition(), body.getRenderOrientation(), body.getRenderScale(), world.getViewMatrix());
+        Matrix4f modelViewMatrix = Renderer.transformation.getModelViewMatrix(body.getRenderPosition(), body.getRenderOrientation(), body.getRenderScale(), Renderer.transformation.getViewMatrix());
         shader.setUniform("modelViewMatrix", modelViewMatrix);
 
         shader.setUniform("texture_sampler", 0);
