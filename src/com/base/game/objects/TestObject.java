@@ -45,7 +45,7 @@ public class TestObject extends GameObject {
 
         Texture texture = TextureLoader.getInstance().getTexture("res/textures/grassblock.png");
         Material material = new Material(texture, 1f);
-        mesh = OBJLoader.loadMesh("res/models/cube.obj");
+        mesh = OBJLoader.loadMesh("res/models/cube_model.obj");
         mesh.setMaterial(material);
 
         scaleModifier = 0.01f;
