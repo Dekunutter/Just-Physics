@@ -3,7 +3,7 @@ package com.base.engine.physics.springs;
 import com.base.engine.GameObject;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.body.Body;
-import com.base.game.World;
+import com.base.engine.render.lighting.LightMap;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -13,8 +13,8 @@ public class DistanceJoint extends GameObject {
     private float restLength, elasticity, damping;
     private Body attachedToA, attachedToB;
 
-    public DistanceJoint(World world, float restLength, Vector3f attachedPositionA, Vector3f attachedPositionB, float elasticity, float damping, Body attachToA, Body attachToB) {
-        super(world);
+    public DistanceJoint(float restLength, Vector3f attachedPositionA, Vector3f attachedPositionB, float elasticity, float damping, Body attachToA, Body attachToB) {
+        super();
 
         this.restLength = restLength;
         transform = new Matrix4f();
@@ -86,7 +86,7 @@ public class DistanceJoint extends GameObject {
     }
 
     @Override
-    public void render() {
+    public void render(LightMap lights) {
 
     }
 

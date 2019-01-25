@@ -4,6 +4,7 @@ import com.base.engine.Camera;
 import com.base.engine.GameObject;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.body.Body;
+import com.base.engine.render.lighting.LightMap;
 import com.base.game.World;
 import com.base.game.input.InputCommand;
 import com.base.game.input.InputParser;
@@ -17,7 +18,7 @@ public class CameraObject extends GameObject {
     private float zoomState;
 
     public CameraObject(World world) {
-        super(world);
+        super();
 
         camera = new Camera();
         movement = new Vector3f(0, 0, 0);
@@ -93,7 +94,7 @@ public class CameraObject extends GameObject {
     }
 
     @Override
-    public void render() {
+    public void render(LightMap lights) {
 
     }
 

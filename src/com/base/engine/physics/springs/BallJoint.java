@@ -3,7 +3,7 @@ package com.base.engine.physics.springs;
 import com.base.engine.GameObject;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.body.Body;
-import com.base.game.World;
+import com.base.engine.render.lighting.LightMap;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -16,8 +16,8 @@ public class BallJoint extends GameObject {
     private float elasticity, damping;
     private Body attachedTo;
 
-    public BallJoint(World world, Vector3f position, Vector3f restLength, Vector3f attachedPosition, float elasticity, float damping, Body attachTo) {
-        super(world);
+    public BallJoint(Vector3f position, Vector3f restLength, Vector3f attachedPosition, float elasticity, float damping, Body attachTo) {
+        super();
 
         this.position = position;
         this.restLength = restLength;
@@ -72,7 +72,7 @@ public class BallJoint extends GameObject {
     }
 
     @Override
-    public void render() {
+    public void render(LightMap lights) {
 
     }
 
