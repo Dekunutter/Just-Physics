@@ -22,10 +22,7 @@ public class Edge {
         return direction;
     }
 
-    public Vector3f getTranslatedDirection(Body body) {
-        return getNormal(body).normalize();
-    }
-
+    //TODO: Duplicates code in getting a translated direction vector, but doesnt normalize it? I can do this better
     public Vector3f getNormal(Body body) {
         Vector3f worldPointA = new Vector3f();
         Vector3f worldPointB = new Vector3f();

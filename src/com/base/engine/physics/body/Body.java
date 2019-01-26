@@ -492,11 +492,9 @@ public class Body {
         return faces.size();
     }
 
-    //TODO: Verify transform matrix usage in these functions. Am I using it properly for when I only want rotation for example?
-    //TODO: I think I need to use the local transform here (and in the other functions), not the global like I currently am?
-    public Vector3f getOrientatedFaceNormal(int index) {
+    public Vector3f getFaceNormal(int index) {
         Vector3f rotatedNormal = new Vector3f();
-        faces.get(index).getNormal().mulPosition(transform, rotatedNormal);
+        faces.get(index).getNormal().mulDirection(getLocalTransform(), rotatedNormal);
         rotatedNormal.normalize();
         return rotatedNormal;
     }
@@ -506,7 +504,7 @@ public class Body {
         Vector3f furthest = null;
         for(int i = 0; i < vertices.size(); i++) {
             Vector3f newVertex = new Vector3f(vertices.get(i));
-            newVertex.mulPosition(transform);
+            newVertex.mulPosition(getLocalTransform());
 
             float projection = newVertex.dot(axis);
             if(projection > distance) {
@@ -517,15 +515,13 @@ public class Body {
         return furthest;
     }
 
-    public Vector3f getTranslatedEdgeDirection(int index) {
+    public Vector3f getEdgeDirection(int index) {
         Edge edge = edges.get(index);
+        Vector3f translatedDirection = new Vector3f();
 
-        Vector3f direction = new Vector3f();
-
-        edge.getPointB().sub(edge.getPointA(), direction);
-        direction.mulPosition(transform);
-        direction.normalize();
-        return direction;
+        edge.getDirection().mulDirection(getLocalTransform(), translatedDirection);
+        translatedDirection.normalize();
+        return translatedDirection;
     }
 
     public ArrayList<Vector3f> getTransformedVerticesOfFace(Face face) {
