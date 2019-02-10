@@ -494,7 +494,7 @@ public class Body {
 
     public Vector3f getFaceNormal(int index) {
         Vector3f rotatedNormal = new Vector3f();
-        faces.get(index).getNormal().mulDirection(getLocalTransform(), rotatedNormal);
+        faces.get(index).getNormal().mulDirection(transform, rotatedNormal);
         rotatedNormal.normalize();
         return rotatedNormal;
     }
@@ -504,7 +504,7 @@ public class Body {
         Vector3f furthest = null;
         for(int i = 0; i < vertices.size(); i++) {
             Vector3f newVertex = new Vector3f(vertices.get(i));
-            newVertex.mulPosition(getLocalTransform());
+            newVertex.mulPosition(transform);
 
             float projection = newVertex.dot(axis);
             if(projection > distance) {
@@ -519,7 +519,7 @@ public class Body {
         Edge edge = edges.get(index);
         Vector3f translatedDirection = new Vector3f();
 
-        edge.getDirection().mulDirection(getLocalTransform(), translatedDirection);
+        edge.getDirection().mulDirection(transform, translatedDirection);
         translatedDirection.normalize();
         return translatedDirection;
     }
