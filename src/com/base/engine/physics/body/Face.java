@@ -1,5 +1,6 @@
 package com.base.engine.physics.body;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -19,6 +20,13 @@ public class Face {
 
     public void setNormal(Vector3f normal) {
         this.normal = normal;
+    }
+
+    public Vector3f getTransformedNormal(Matrix4f transform) {
+        Vector3f rotatedNormal = new Vector3f();
+        normal.mulDirection(transform, rotatedNormal);
+        rotatedNormal.normalize();
+        return rotatedNormal;
     }
 
     public void addEdgeIndex(int index) {

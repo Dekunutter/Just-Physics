@@ -1,5 +1,6 @@
 package com.base.engine.physics.body;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.util.Objects;
@@ -22,16 +23,10 @@ public class Edge {
         return direction;
     }
 
-    //TODO: Duplicates code in getting a translated direction vector, but doesnt normalize it? I can do this better
-    public Vector3f getNormal(Body body) {
-        Vector3f worldPointA = new Vector3f();
-        Vector3f worldPointB = new Vector3f();
-        Vector3f normal = new Vector3f();
-
-        pointA.mulPosition(body.getWorldTransform(), worldPointA);
-        pointB.mulPosition(body.getWorldTransform(), worldPointB);
-        worldPointB.sub(worldPointA, normal);
-        return normal;
+    public Vector3f getTransformedDirection(Matrix4f transform) {
+        Vector3f translatedDirection = new Vector3f();
+        direction.mulDirection(transform, translatedDirection);
+        return translatedDirection;
     }
 
     public Vector3f getPointA() {

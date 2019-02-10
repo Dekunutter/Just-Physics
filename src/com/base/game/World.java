@@ -1,10 +1,13 @@
 package com.base.game;
 
 import com.base.engine.Camera;
+import com.base.engine.Debug;
 import com.base.engine.GameObject;
 import com.base.engine.loop.GameLoop;
 import com.base.engine.loop.Renderer;
 import com.base.engine.physics.Integration;
+import com.base.engine.physics.collision.CollisionDetection;
+import com.base.engine.physics.collision.Manifold;
 import com.base.engine.render.Attenuation;
 import com.base.engine.render.lighting.*;
 import com.base.game.objects.CameraObject;
@@ -17,11 +20,14 @@ public class World implements GameLoop {
     private LightMap lights;
     private ArrayList<Camera> cameras;
     private ArrayList<GameObject> worldObjects;
-    private TestObject testObject;
+    private CollisionDetection collider;
+    private TestObject testObject, testObjectB;
 
     public World() throws Exception {
         lights = new LightMap();
         cameras = new ArrayList<>();
+
+        collider = new CollisionDetection();
 
         initObjects();
     }
@@ -30,10 +36,15 @@ public class World implements GameLoop {
         worldObjects = new ArrayList<>();
         testObject = new TestObject(new Vector3f(0, 0, -5));
         testObject.setController(Game.getInstance().getPlayerInput());
+        testObject.getBody().addForce(new Vector3f(0, 10.0f, 0));
+        testObject.getBody().addTorque(new Vector3f(100.0f, 0, 0));
         worldObjects.add(testObject);
         CameraObject cameraObject = new CameraObject(this);
         cameraObject.setController(Game.getInstance().getPlayerInput());
         worldObjects.add(cameraObject);
+        testObjectB = new TestObject(new Vector3f(0, 3, -5));
+        testObjectB.setController(Game.getInstance().getPlayerInput());
+        worldObjects.add(testObjectB);
 
         AmbientLight ambientLight = new AmbientLight(new Vector3f(0.1f, 0.1f, 0.1f), 10f);
         lights.put(ambientLight);
@@ -70,6 +81,7 @@ public class World implements GameLoop {
         for(int i = 0; i < worldObjects.size(); i++) {
             worldObjects.get(i).update(integrationType);
         }
+        Manifold collision = collider.separatingAxisTheorem(testObject.getBody(), testObjectB.getBody());
     }
 
     @Override

@@ -492,19 +492,12 @@ public class Body {
         return faces.size();
     }
 
-    public Vector3f getFaceNormal(int index) {
-        Vector3f rotatedNormal = new Vector3f();
-        faces.get(index).getNormal().mulDirection(transform, rotatedNormal);
-        rotatedNormal.normalize();
-        return rotatedNormal;
-    }
-
     public Vector3f getSupport(Vector3f axis) {
         float distance = -Float.MAX_VALUE;
         Vector3f furthest = null;
         for(int i = 0; i < vertices.size(); i++) {
-            Vector3f newVertex = new Vector3f(vertices.get(i));
-            newVertex.mulPosition(transform);
+            Vector3f newVertex = new Vector3f();
+            vertices.get(i).mulPosition(transform, newVertex);
 
             float projection = newVertex.dot(axis);
             if(projection > distance) {
@@ -513,25 +506,6 @@ public class Body {
             }
         }
         return furthest;
-    }
-
-    public Vector3f getEdgeDirection(int index) {
-        Edge edge = edges.get(index);
-        Vector3f translatedDirection = new Vector3f();
-
-        edge.getDirection().mulDirection(transform, translatedDirection);
-        translatedDirection.normalize();
-        return translatedDirection;
-    }
-
-    public ArrayList<Vector3f> getTransformedVerticesOfFace(Face face) {
-        ArrayList<Vector3f> results = new ArrayList<>();
-        for(int i = 0; i < face.getEdgeIndices().size(); i++) {
-            Vector3f point = new Vector3f();
-            edges.get(face.getEdgeIndices().get(i)).getPointA().mulPosition(transform, point);
-            results.add(point);
-        }
-        return results;
     }
 
     public ArrayList<Edge> getEdgesOfFace(int faceIndex) {
