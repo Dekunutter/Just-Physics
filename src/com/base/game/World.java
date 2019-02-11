@@ -100,6 +100,8 @@ public class World implements GameLoop {
             for (int j = 0; j < worldObjects.size(); j++) {
                 worldObjects.get(j).render(lights);
             }
+
+            Debug.renderContactPoints();
         }
     }
 

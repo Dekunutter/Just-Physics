@@ -1,5 +1,6 @@
 package com.base.engine.physics.collision;
 
+import com.base.engine.Debug;
 import com.base.engine.physics.body.Body;
 import com.base.engine.physics.body.Edge;
 import com.base.engine.physics.body.Face;
@@ -16,6 +17,7 @@ public class CollisionDetection {
         FACE_OF_A, FACE_OF_B, EDGE
     }
 
+    //TODO: Try out collision detection in bodyA space instead of world space
     public Manifold separatingAxisTheorem(Body bodyA, Body bodyB) {
         Manifold results = new Manifold(bodyA, bodyB);
         if(!queryFaceCollisions(bodyA, bodyB, results, Type.FACE_OF_A)) {
@@ -161,6 +163,7 @@ public class CollisionDetection {
         ArrayList<ContactPoint> points = getDeepestPoints(reference, results.getReferenceFace(), incident, incidentFace, results.getType(), transformedVertices);
         results.addContactPoints(points);
         System.out.println("contacting on " + points.size() + " points");
+        //Debug.addContactPoints(points);
     }
 
     //TODO: Verify contact points are all accurate

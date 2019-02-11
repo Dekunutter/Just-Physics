@@ -1,7 +1,6 @@
 package com.base.engine.physics.collision;
 
 import com.base.engine.physics.body.Body;
-import com.base.engine.render.Mesh;
 import org.joml.Vector3f;
 
 public class ContactPoint {
@@ -9,22 +8,17 @@ public class ContactPoint {
     private float penetration;
     private Body body, other;
 
-    private Mesh mesh;
     private float[] vertices = {-0.05f, 0.05f, 0, -0.05f, -0.05f, 0, 0.05f, -0.05f, 0, 0.05f, 0.05f, 0};
     private int[] indices = {0, 1, 2, 2, 3, 0};
 
     public ContactPoint(Vector3f position, Body body) {
         this.position = position;
         this.body = body;
-
-        mesh = new Mesh(vertices, new float[] {}, new float[] {}, indices);
     }
 
     public ContactPoint(Vector3f position, float depth) {
         this.position = position;
         this.penetration = depth;
-
-        mesh = new Mesh(vertices, new float[] {}, new float[] {}, indices);
     }
 
     public ContactPoint(Vector3f position, Vector3f normal, Body body, Body other) {
@@ -32,8 +26,6 @@ public class ContactPoint {
         this.normal = normal;
         this.body = body;
         this.other = other;
-
-        mesh = new Mesh(vertices, new float[] {}, new float[] {}, indices);
     }
 
     public ContactPoint(Vector3f position, Vector3f normal, float depth, Body body, Body other) {
@@ -42,8 +34,6 @@ public class ContactPoint {
         this.penetration = depth;
         this.body = body;
         this.other = other;
-
-        mesh = new Mesh(vertices, new float[] {}, new float[] {}, indices);
     }
 
     public void swapBodies() {
@@ -80,5 +70,9 @@ public class ContactPoint {
 
     public Vector3f getVelocity() {
         return pointVelocity;
+    }
+
+    public Vector3f getPosition() {
+        return position;
     }
 }

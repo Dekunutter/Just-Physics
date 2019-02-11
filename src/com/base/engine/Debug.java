@@ -1,16 +1,23 @@
 package com.base.engine;
 
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
+import com.base.engine.loop.Renderer;
+import com.base.engine.physics.collision.ContactPoint;
+import com.base.engine.render.Colour;
+import com.base.engine.render.Material;
+import com.base.engine.render.Mesh;
+import com.base.engine.render.Shader;
+import com.base.engine.render.shaders.BillboardShader;
+import org.joml.*;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 
 public class Debug {
     private static boolean enabled = false;
     private static boolean polygonMode = false;
+    private static Shader billboardShader;
+    private static ArrayList<ContactPoint> contactPoints = new ArrayList<>();
 
     public static NumberFormat formatter = new DecimalFormat("0.0000000000");
 
@@ -64,5 +71,45 @@ public class Debug {
             }
         }
         System.out.println(String.format(line, args));
+    }
+
+    //TODO: Change this to intake contact manifold objects instead so that I can create debug rendering for more than just the contact points
+    //TODO: Find a better means of storing contact points since the update runs multiple times and we don't want to build them up so we clear them here before we add them, but this means we will only store the points of the last contact of the last object pairing here
+    public static void addContactPoints(ArrayList<ContactPoint> contactPoints) {
+        Debug.contactPoints.clear();
+        Debug.contactPoints.addAll(contactPoints);
+    }
+
+    public static void renderContactPoints() {
+        try {
+            billboardShader = BillboardShader.getInstance();
+            billboardShader.createUniform("projectionMatrix");
+            billboardShader.createUniform("modelViewMatrix");
+            billboardShader.createUniform("colour");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        float[] vertices = {-0.05f, 0.05f, 0, -0.05f, -0.05f, 0, 0.05f, -0.05f, 0, 0.05f, 0.05f, 0};
+        int[] indices = {0, 1, 2, 2, 3, 0};
+        Colour colour = new Colour(1, 0, 0);
+
+        for(int i = 0; i < contactPoints.size(); i++) {
+            ContactPoint current = contactPoints.get(i);
+            billboardShader.assign(current);
+            billboardShader.bind();
+
+            Mesh contactMesh = new Mesh(vertices, new float[] {}, new float[] {}, indices);
+            Material material = new Material();
+            contactMesh.setMaterial(material);
+
+            billboardShader.setUniform("projectionMatrix", Renderer.transformation.getProjectionMatrix());
+
+            Matrix4f modelViewMatrix = Renderer.transformation.getModelViewMatrix(current.getPosition(), new Quaternionf(1, 0, 0, 0), 1, Renderer.transformation.getViewMatrix());
+            billboardShader.setUniform("modelViewMatrix", modelViewMatrix);
+            billboardShader.setUniform("colour", colour.toVector4f());
+            contactMesh.render();
+            billboardShader.unbind();
+        }
     }
 }
