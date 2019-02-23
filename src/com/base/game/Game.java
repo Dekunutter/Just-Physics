@@ -1,5 +1,6 @@
 package com.base.game;
 
+import com.base.engine.Debug;
 import com.base.engine.Engine;
 import com.base.engine.GameState;
 import com.base.engine.Time;
@@ -17,6 +18,8 @@ public class Game extends GameState {
     private World world;
 
     private InputParser playerInput;
+    private boolean isPausePressed;
+    private boolean paused;
 
     public static Game getInstance() {
         if(instance == null) {
@@ -27,6 +30,9 @@ public class Game extends GameState {
 
     private Game() {
         gameTitle = "Just Physics";
+
+        isPausePressed = false;
+        paused = false;
     }
 
     @Override
@@ -42,6 +48,12 @@ public class Game extends GameState {
     @Override
     public void getInput() {
         Mouse.getInput(Engine.window);
+        if(playerInput.press(InputCommand.PAUSE)) {
+            isPausePressed = true;
+        } else {
+            isPausePressed = false;
+        }
+        Debug.listenForStepInput(playerInput);
 
         if(playerInput.hold(InputCommand.COLOUR_UP)) {
             colourDirection = 1.0f;
@@ -53,20 +65,36 @@ public class Game extends GameState {
             colourDirection = 0.0f;
         }
 
-        world.getInput();
+        if(!paused) {
+            world.getInput();
+        }
     }
 
     @Override
     public void update(Integration integrationType) {
         Mouse.update();
 
-        world.update(integrationType);
+        updatePauseState();
+
+        Debug.activateStepUpdate(paused);
+        if(!paused || Debug.willStepUpdate()) {
+            world.update(integrationType);
+            Debug.resetStepUpdate();
+        }
 
         colour += colourDirection * Time.getDelta();
         if(colour > 1.0f) {
             colour = 1.0f;
         } else if(colour < 0.0f) {
             colour = 0.0f;
+        }
+    }
+
+    private void updatePauseState() {
+        if (!paused && isPausePressed) {
+            paused = true;
+        } else if(paused && isPausePressed){
+            paused = false;
         }
     }
 
