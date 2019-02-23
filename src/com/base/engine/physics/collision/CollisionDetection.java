@@ -49,6 +49,8 @@ public class CollisionDetection {
         return results;
     }
 
+    //TODO: Need some means of verifying that my separation planes are correct. Could I render them somehow or just verify them mathematically?
+    // do I even calculate distance from the plane right? Looks ok but I don't remember the specifics
     private boolean queryFaceCollisions(Body reference, Body incident, Manifold results, Type collisionType) {
         for(int i = 0; i < reference.getFaceCount(); i++) {
             Vector3f axis = reference.getFace(i).getTransformedNormal(reference.getWorldTransform());
@@ -73,20 +75,21 @@ public class CollisionDetection {
         return true;
     }
 
+    //TODO: Been too long since I coded this and its not very self-explanatory. Any way to verify better? Seems to work alright though
     private boolean queryEdgeCollisions(Body reference, Body incident, Manifold results, Type collisionType)
     {
         ArrayList<Edge> edgesA = reference.getEdges();
         ArrayList<Edge> edgesB = incident.getEdges();
         for(int i = 0; i < edgesA.size(); i++) {
             Face referenceFaceA = reference.getFace(edgesA.get(i).getFaceAIndex());
-            Face referenceFaceB = reference.getFace(edgesA.get(i).getFaceAIndex());
+            Face referenceFaceB = reference.getFace(edgesA.get(i).getFaceBIndex());
             Vector3f edgeAFaceANormal = referenceFaceA.getTransformedNormal(reference.getWorldTransform());
             Vector3f edgeAFaceBNormal = referenceFaceB.getTransformedNormal(reference.getWorldTransform());
             for(int j = 0; j < edgesB.size(); j++) {
-                Face incidentFaceA = incident.getFace(edgesB.get(i).getFaceAIndex());
+                Face incidentFaceA = incident.getFace(edgesB.get(j).getFaceAIndex());
                 Vector3f edgeBFaceANormal = incidentFaceA.getTransformedNormal(incident.getWorldTransform());
                 edgeBFaceANormal.negate();
-                Face incidentFaceB = incident.getFace(edgesB.get(i).getFaceBIndex());
+                Face incidentFaceB = incident.getFace(edgesB.get(j).getFaceBIndex());
                 Vector3f edgeBFaceBNormal = incidentFaceB.getTransformedNormal(incident.getWorldTransform());
                 edgeAFaceBNormal.negate();
 
@@ -163,7 +166,7 @@ public class CollisionDetection {
         ArrayList<ContactPoint> points = getDeepestPoints(reference, results.getReferenceFace(), incident, incidentFace, results.getType(), transformedVertices);
         results.addContactPoints(points);
         System.out.println("contacting on " + points.size() + " points");
-        //Debug.addContactPoints(points);
+        Debug.addContactPoints(points);
     }
 
     //TODO: Verify contact points are all accurate
