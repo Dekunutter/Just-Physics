@@ -62,6 +62,10 @@ public class Mouse {
         return buttonCallback.isButtonHeld(buttonCode);
     }
 
+    public static boolean isButtonPressed(int buttonCode) {
+        return buttonCallback.isButtonPressed(buttonCode);
+    }
+
     public static boolean isScrolling() {
         return scrollCallback.getScrollDirection() != 0;
     }

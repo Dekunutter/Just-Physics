@@ -10,7 +10,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 public class KeyboardHandler extends GLFWKeyCallback {
-    public Map<Integer, InputEvent> events = new HashMap<>();
+    private Map<Integer, InputEvent> events = new HashMap<>();
 
     @Override
     public void invoke(long window, int key, int scancode, int action, int mods) {

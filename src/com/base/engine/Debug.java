@@ -1,5 +1,7 @@
 package com.base.engine;
 
+import com.base.engine.input.Input;
+import com.base.engine.input.keyboard.Keys;
 import com.base.engine.loop.Renderer;
 import com.base.engine.physics.collision.ContactPoint;
 import com.base.engine.render.Colour;
@@ -7,15 +9,21 @@ import com.base.engine.render.Material;
 import com.base.engine.render.Mesh;
 import com.base.engine.render.Shader;
 import com.base.engine.render.shaders.BillboardShader;
+import com.base.game.input.InputCommand;
+import com.base.game.input.InputParser;
 import org.joml.*;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class Debug {
     private static boolean enabled = false;
     private static boolean polygonMode = false;
+    private static boolean isStepPressed = false;
+    private static boolean isStepActive = false;
     private static Shader billboardShader;
     private static ArrayList<ContactPoint> contactPoints = new ArrayList<>();
 
@@ -43,6 +51,34 @@ public class Debug {
 
     public static boolean isPolygonModeEnabled() {
         return polygonMode;
+    }
+
+    public static void addStepInputBindings(Map<InputCommand, List<Input>> bindings) {
+        List<Input> stepDebugBindings = new ArrayList<>();
+        stepDebugBindings.add(Keys.O);
+        bindings.put(InputCommand.STEP_DEBUG, stepDebugBindings);
+    }
+
+    public static void listenForStepInput(InputParser input) {
+        if(input.press(InputCommand.STEP_DEBUG)) {
+            isStepPressed = true;
+        } else {
+            isStepPressed = false;
+        }
+    }
+
+    public static void activateStepUpdate(boolean paused) {
+        if(paused && isStepPressed) {
+            isStepActive = true;
+        }
+    }
+
+    public static boolean willStepUpdate() {
+        return isStepActive;
+    }
+
+    public static void resetStepUpdate() {
+        isStepActive = false;
     }
 
     public static void println(String line) {

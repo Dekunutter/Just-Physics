@@ -1,5 +1,6 @@
 package com.base.game.input;
 
+import com.base.engine.Debug;
 import com.base.engine.input.Input;
 import com.base.engine.input.InputHandler;
 import com.base.engine.input.keyboard.Keys;
@@ -54,6 +55,10 @@ public class InputParser {
         List<Input> zoomCameraBindings = new ArrayList<>();
         bindings.put(InputCommand.ZOOM_CAMERA, zoomCameraBindings);
 
+        List<Input> pauseBindings = new ArrayList<>();
+        pauseBindings.add(Keys.P);
+        bindings.put(InputCommand.PAUSE, pauseBindings);
+
         List<Input> colourUpBindings = new ArrayList<>();
         colourUpBindings.add(Keys.W);
         colourUpBindings.add(Keys.UP);
@@ -67,10 +72,16 @@ public class InputParser {
         List<Input> scaleObjectBindings = new ArrayList<>();
         scaleObjectBindings.add(Keys.LEFT_SHIFT);
         bindings.put(InputCommand.SCALE_OBJECT, scaleObjectBindings);
+
+        Debug.addStepInputBindings(bindings);
     }
 
     public static boolean hold(InputCommand command) {
         return handler.hold(bindings.get(command));
+    }
+
+    public static boolean press(InputCommand command) {
+        return handler.pressed(bindings.get(command));
     }
 
     public static boolean scroll() {

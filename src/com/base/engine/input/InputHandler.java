@@ -25,6 +25,21 @@ public class InputHandler {
         return false;
     }
 
+    public boolean pressed(List<Input> inputs) {
+        for(int i = 0; i < inputs.size(); i++) {
+            InputHardware deviceTouched = inputs.get(i).getHardware();
+            switch(deviceTouched) {
+                case KEYBOARD:
+                    return Keyboard.isKeyPressed(inputs.get(i).getValue());
+                case MOUSE:
+                    return Mouse.isButtonPressed(inputs.get(i).getValue());
+                default:
+                    return Keyboard.isKeyPressed(inputs.get(i).getValue());
+            }
+        }
+        return false;
+    }
+
     public boolean scroll() {
         return Mouse.isScrolling();
     }

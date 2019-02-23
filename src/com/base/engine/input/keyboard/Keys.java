@@ -11,6 +11,8 @@ public class Keys {
     public static Input D = new Input(GLFW_KEY_D);
     public static Input Z = new Input(GLFW_KEY_Z);
     public static Input X = new Input(GLFW_KEY_X);
+    public static Input O = new Input(GLFW_KEY_O);
+    public static Input P = new Input(GLFW_KEY_P);
     public static Input UP = new Input(GLFW_KEY_UP);
     public static Input LEFT = new Input(GLFW_KEY_LEFT);
     public static Input DOWN = new Input(GLFW_KEY_DOWN);
