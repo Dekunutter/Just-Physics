@@ -5,7 +5,6 @@ import org.joml.Vector3f;
 public class Plane {
     private final Vector3f normal;
     private final float distance;
-    private Vector3f point;
 
     public Plane(Vector3f normal, float distance) {
         this.normal = new Vector3f(normal).normalize();
@@ -15,7 +14,6 @@ public class Plane {
     public Plane(Vector3f normal, Vector3f point) {
         this.normal = new Vector3f(normal).normalize();
         this.distance = normal.dot(point);
-        this.point = point;
     }
 
     public float getDistance() {
