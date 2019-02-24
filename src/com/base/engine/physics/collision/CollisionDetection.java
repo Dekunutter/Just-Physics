@@ -50,7 +50,8 @@ public class CollisionDetection {
     }
 
     //TODO: Need some means of verifying that my separation planes are correct. Could I render them somehow or just verify them mathematically?
-    // do I even calculate distance from the plane right? Looks ok but I don't remember the specifics
+    // some mathematical tests actually say they are right anyway, I am not 100% sure but fairly confident in their accuracy
+    // I know I am calculating distance from the plane correctly. My implementation is different than the typical but just more optimal. It achieves the same result
     private boolean queryFaceCollisions(Body reference, Body incident, Manifold results, Type collisionType) {
         for(int i = 0; i < reference.getFaceCount(); i++) {
             Vector3f axis = reference.getFace(i).getTransformedNormal(reference.getWorldTransform());
@@ -75,7 +76,6 @@ public class CollisionDetection {
         return true;
     }
 
-    //TODO: Been too long since I coded this and its not very self-explanatory. Any way to verify better? Seems to work alright though
     private boolean queryEdgeCollisions(Body reference, Body incident, Manifold results, Type collisionType)
     {
         ArrayList<Edge> edgesA = reference.getEdges();
@@ -95,11 +95,10 @@ public class CollisionDetection {
 
                 Vector3f edgeADirection = edgesA.get(i).getTransformedDirection(reference.getWorldTransform()).normalize();
                 Vector3f edgeBDirection = edgesB.get(j).getTransformedDirection(incident.getWorldTransform()).normalize();
-                float edgeBFaceADirection = edgeBFaceANormal.dot(edgeADirection);
-                float edgeAFaceBDirection = edgeAFaceBNormal.dot(edgeADirection);
-                float edgeAFaceADirection = edgeAFaceANormal.dot(edgeBDirection);
-                float edgeBFaceBDirection = edgeBFaceBNormal.dot(edgeBDirection);
-                if(edgeBFaceADirection * edgeAFaceBDirection < 0 && edgeAFaceADirection * edgeBFaceBDirection < 0 && edgeBFaceADirection * edgeBFaceBDirection > 0) {
+
+                if(isMinkowskiFace(edgeAFaceANormal, edgeAFaceBNormal, edgeADirection, edgeBFaceANormal, edgeBFaceBNormal, edgeBDirection)) {
+                    //TODO: Verify the calculation of the manifold. I am confident this is fine but I want to be sure
+                    // test against some real edge collisions
                     Vector3f axis = new Vector3f();
                     edgeADirection.cross(edgeBDirection, axis);
                     if(axis.length() < 0.00000001f) {
@@ -134,6 +133,15 @@ public class CollisionDetection {
             }
         }
         return true;
+    }
+
+    private boolean isMinkowskiFace(Vector3f edgeAFaceANormal, Vector3f edgeAFaceBNormal, Vector3f edgeADirection, Vector3f edgeBFaceANormal, Vector3f edgeBFaceBNormal, Vector3f edgeBDirection) {
+        float edgeBFaceADirection = edgeBFaceANormal.dot(edgeADirection);
+        float edgeBFaceBDirection = edgeBFaceBNormal.dot(edgeADirection);
+        float edgeAFaceADirection = edgeAFaceANormal.dot(edgeBDirection);
+        float edgeAFaceBDirection = edgeAFaceBNormal.dot(edgeBDirection);
+
+        return ((edgeBFaceADirection * edgeBFaceBDirection < 0) && (edgeAFaceADirection * edgeAFaceBDirection < 0) && (edgeBFaceADirection * edgeAFaceBDirection > 0));
     }
 
     //TODO: Verify contact points are all accurate

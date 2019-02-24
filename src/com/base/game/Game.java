@@ -78,6 +78,7 @@ public class Game extends GameState {
 
         Debug.activateStepUpdate(paused);
         if(!paused || Debug.willStepUpdate()) {
+            Debug.update();
             world.update(integrationType);
             Debug.resetStepUpdate();
         }

@@ -109,6 +109,10 @@ public class Debug {
         System.out.println(String.format(line, args));
     }
 
+    public static void update() {
+        Debug.contactPoints.clear();
+    }
+
     //TODO: Change this to intake contact manifold objects instead so that I can create debug rendering for more than just the contact points
     //TODO: Find a better means of storing contact points since the update runs multiple times and we don't want to build them up so we clear them here before we add them, but this means we will only store the points of the last contact of the last object pairing here
     public static void addContactPoints(ArrayList<ContactPoint> contactPoints) {
