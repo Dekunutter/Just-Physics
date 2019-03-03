@@ -49,9 +49,7 @@ public class CollisionDetection {
         return results;
     }
 
-    //TODO: Need some means of verifying that my separation planes are correct. Could I render them somehow or just verify them mathematically?
-    // some mathematical tests actually say they are right anyway, I am not 100% sure but fairly confident in their accuracy
-    // I know I am calculating distance from the plane correctly. My implementation is different than the typical but just more optimal. It achieves the same result
+    //TODO: Could I just get a point on the face as the plane point, instead of doing a support point calculation?
     private boolean queryFaceCollisions(Body reference, Body incident, Manifold results, Type collisionType) {
         for(int i = 0; i < reference.getFaceCount(); i++) {
             Vector3f axis = reference.getFace(i).getTransformedNormal(reference.getWorldTransform());
@@ -309,9 +307,6 @@ public class CollisionDetection {
         return result;
     }
 
-    //TODO: Pretty sure this is broken. It gets the second point on the edge but doesn't check whether we are
-    // interacting with the edge's faceA or faceB indexes, which could change which point we need to grab so in
-    // the case of some faces we could be doing this totally wrong. See how getVerticesOfFace() works in Body.
     private Set<Plane> getSidePlanes(Body object, int face) {
         Set<Plane> planes = new HashSet<>();
 
