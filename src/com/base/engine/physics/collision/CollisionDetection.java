@@ -122,8 +122,8 @@ public class CollisionDetection {
                         results.setPenetration(distance);
                         results.setType(collisionType.ordinal());
                         results.setEnterNormal(axis);
-                        results.setEdgeDirectionA(edgeADirection);
-                        results.setEdgeDirectionB(edgeBDirection);
+                        results.setEdgeA(i);
+                        results.setEdgeB(j);
                         results.setSupportA(planePoint);
                         results.setSupportB(support);
                     }
@@ -142,7 +142,6 @@ public class CollisionDetection {
         return ((edgeBFaceADirection * edgeBFaceBDirection < 0) && (edgeAFaceADirection * edgeAFaceBDirection < 0) && (edgeBFaceADirection * edgeAFaceBDirection > 0));
     }
 
-    //TODO: Verify contact points are all accurate
     private void getFaceContactPoints(Body reference, Body incident, Manifold results) {
         int incidentFace = -1;
         float minDot = Float.MAX_VALUE;
@@ -168,53 +167,57 @@ public class CollisionDetection {
         while(iterator.hasNext()) {
             transformedVertices = clipFace(iterator.next(), transformedVertices);
         }
+        Debug.addClipPoints(transformedVertices);
 
         ArrayList<ContactPoint> points = getDeepestPoints(reference, results.getReferenceFace(), incident, incidentFace, results.getType(), transformedVertices);
         results.addContactPoints(points);
-        System.out.println("contacting on " + points.size() + " points");
         Debug.addContactPoints(points);
     }
 
-    //TODO: Verify contact points are all accurate
+    //TODO: Fix the edge contact point generation. Currently seems to work ok but could be
+    // improved. Needs additional testing. Am I really getting the shortest distance?
+    // Also, am I really getting the "support" edges? Edge to edge collisions can often have
+    // multiple edge options with the shortest manifold, so are the edges I am getting truly
+    // the closest between the two objects? I think they are but I should verify.
     private void getEdgeContactPoint(Body reference, Body incident, Manifold results) {
-        Vector3f referenceEdge = new Vector3f(results.getEdgeDirectionA());
-        Vector3f incidentEdge = new Vector3f(results.getEdgeDirectionB());
+        Edge referenceEdge = reference.getEdge(results.getEdgeA());
+        Edge incidentEdge = incident.getEdge(results.getEdgeB());
 
-        Vector3f referenceEdgePoint = new Vector3f(results.getSupportA());
-        Vector3f incidentEdgePoint = new Vector3f(results.getSupportB());
+        Edge referenceEdgeTransformed = new Edge(referenceEdge.getPointA().mulPosition(reference.getWorldTransform(), new Vector3f()), referenceEdge.getPointB().mulPosition(reference.getWorldTransform(), new Vector3f()));
+        Edge incidentEdgeTransformed = new Edge(incidentEdge.getPointA().mulPosition(incident.getWorldTransform(), new Vector3f()), incidentEdge.getPointB().mulPosition(incident.getWorldTransform(), new Vector3f()));
 
-        Edge edgeA = getEdgeOfContact(reference, referenceEdge, referenceEdgePoint);
-        Edge edgeB = getEdgeOfContact(incident, incidentEdge, incidentEdgePoint);
-
-        if(edgeA == null || edgeB == null) {
+        if(referenceEdgeTransformed == null || incidentEdgeTransformed == null) {
             return;
         }
 
-        Vector3f u = new Vector3f();
-        Vector3f v = new Vector3f();
-        Vector3f w = new Vector3f();
-        edgeA.getPointB().sub(edgeA.getPointA(), u);
-        edgeB.getPointB().sub(edgeB.getPointA(), v);
-        edgeA.getPointA().sub(edgeB.getPointA(), w);
-        float a = u.dot(u);
-        float b = u.dot(v);
-        float c = v.dot(v);
-        float d = u.dot(w);
-        float e = v.dot(w);
+        Vector3f edgeDirectionA = new Vector3f();
+        Vector3f edgeDirectionB = new Vector3f();
+        Vector3f directionAToB = new Vector3f();
+        referenceEdgeTransformed.getPointB().sub(referenceEdgeTransformed.getPointA(), edgeDirectionA);
+        incidentEdgeTransformed.getPointB().sub(incidentEdgeTransformed.getPointA(), edgeDirectionB);
+        referenceEdgeTransformed.getPointA().sub(incidentEdgeTransformed.getPointA(), directionAToB);
+        edgeDirectionA.normalize();
+        edgeDirectionB.normalize();
+        directionAToB.normalize();
+        float a = edgeDirectionA.dot(edgeDirectionA);
+        float b = edgeDirectionA.dot(edgeDirectionB);
+        float c = edgeDirectionB.dot(edgeDirectionB);
+        float d = edgeDirectionA.dot(directionAToB);
+        float e = edgeDirectionB.dot(directionAToB);
         float D = a * c - b * b;
 
         float sN = 0, tN = 0, sD = D, tD = D;
         if(D < 0.0001f) {
-            sN = 0;
-            sD = 1;
+            sN = 0.0f;
+            sD = 1.0f;
             tN = e;
             tD = c;
         }
         else {
             sN = b * e - c * d;
             tN = a * e - b * d;
-            if(sN < 0) {
-                sN = 0;
+            if(sN < 0.0f) {
+                sN = 0.0f;
                 tN = e;
                 tD = c;
             }
@@ -224,10 +227,10 @@ public class CollisionDetection {
                 tD = c;
             }
         }
-        if(tN < 0) {
-            tN = 0;
-            if(-d < 0) {
-                sN = 0;
+        if(tN < 0.0f) {
+            tN = 0.0f;
+            if(-d < 0.0f) {
+                sN = 0.0f;
             }
             else if(-d > a) {
                 sN = sD;
@@ -240,8 +243,8 @@ public class CollisionDetection {
         else if(tN > tD) {
             tN = tD;
 
-            if((-d + b) < 0) {
-                sN = 0;
+            if((-d + b) < 0.0f) {
+                sN = 0.0f;
             }
             else if((-d + b) > a) {
                 sN = sD;
@@ -254,57 +257,24 @@ public class CollisionDetection {
 
         float sc = Math.abs(sN) < 0.0001f ? 0 : sN / sD;
         float tc = Math.abs(tN) < 0.0001f ? 0 : tN / tD;
-        Vector3f o = new Vector3f();
-        Vector3f n = new Vector3f();
-        u.mul(sc, o);
-        v.mul(tc, n);
-        //TODO: Verify this stuff. I am creating an unused dp vector and adding transformed normals of the collision edges to o and n as new vectors and not using them anywhere. What??
-        Vector3f dP = new Vector3f(w).add(new Vector3f(u).mul(sc)).sub(new Vector3f(v).mul(tc));
-        //o.add(edgeA.getPointA());
-        //n.add(edgeB.getPointA());
-        o.add(edgeA.getPointA().mulPosition(reference.getWorldTransform(), new Vector3f()));
-        n.add(edgeB.getPointA().mulPosition(incident.getWorldTransform(), new Vector3f()));
+        Vector3f referenceSupportPoint = new Vector3f();
+        Vector3f incidentSupportPoint = new Vector3f();
+        edgeDirectionA.mul(sc, referenceSupportPoint);
+        edgeDirectionB.mul(tc, incidentSupportPoint);
+
+        referenceSupportPoint.mulPosition(reference.getWorldTransform());
+        incidentSupportPoint.mulPosition(incident.getWorldTransform());
 
         Vector3f contact = new Vector3f();
-        o.add(n, contact);
+        referenceSupportPoint.add(incidentSupportPoint, contact);
         contact.div(2);
 
         Vector3f contactNormal = new Vector3f();
-        edgeA.getTransformedDirection(reference.getWorldTransform()).cross(edgeB.getTransformedDirection(incident.getWorldTransform()), contactNormal);
+        referenceEdgeTransformed.getDirection().cross(incidentEdgeTransformed.getDirection(), contactNormal);
 
-        results.addContactPoint(new ContactPoint(contact, contactNormal, o.distance(n), reference, incident));
-    }
-
-    private Edge getEdgeOfContact(Body object, Vector3f edgeDirection, Vector3f furthestPoint) {
-        Edge result = null;
-        float shortestDistance = Float.MAX_VALUE;
-        for(int i = 0; i < object.getFaceCount(); i++) {
-            for(int j = 0; j < object.getEdgesOfFace(i).size(); j++) {
-                Edge edge = object.getEdge(object.getFace(i).getEdgeIndices().get(j));
-                Edge real;
-                Vector3f transformedA = new Vector3f();
-                Vector3f transformedB = new Vector3f();
-                if(edge.getFaceBIndex() == i) {
-                    edge.getPointB().mulPosition(object.getWorldTransform(), transformedA);
-                    edge.getPointA().mulPosition(object.getWorldTransform(), transformedB);
-                    real = new Edge(transformedA, transformedB);
-                }
-                else {
-                    edge.getPointA().mulPosition(object.getWorldTransform(), transformedA);
-                    edge.getPointB().mulPosition(object.getWorldTransform(), transformedB);
-                    real = new Edge(transformedA, transformedB);
-                }
-
-                if(real.containsPoint(furthestPoint)) {
-                    float distance = new Vector3f(real.getDirection()).normalize().distance(edgeDirection);
-                    if(distance < shortestDistance) {
-                        result = real;
-                        shortestDistance = distance;
-                    }
-                }
-            }
-        }
-        return result;
+        ContactPoint point = new ContactPoint(contact, contactNormal, referenceSupportPoint.distance(incidentSupportPoint), reference, incident);
+        results.addContactPoint(point);
+        Debug.addContactPoint(point);
     }
 
     private Set<Plane> getSidePlanes(Body object, int face) {
@@ -377,7 +347,8 @@ public class CollisionDetection {
         return intersection.add(pointA);
     }
 
-    //TODO: Verify that only the deepest contact points are returned
+    //TODO: Verify that the contact point objects themselves are being created properly. Are the
+    // references to body and other being stored the correct way around?
     private ArrayList<ContactPoint> getDeepestPoints(Body object, int face, Body other, int otherFace, int type, ArrayList<Vector3f> clipPoints)
     {
         ArrayList<ContactPoint> safe = new ArrayList<>();
@@ -395,7 +366,7 @@ public class CollisionDetection {
 
             if(plane.isPointBehindPlane(point)) {
                 if(type == Type.FACE_OF_B.ordinal()) {
-                    safe.add(new ContactPoint(point, axis, current, object, other));
+                    safe.add(new ContactPoint(point, axis, current, other, object));
                 }
                 else {
                     safe.add(new ContactPoint(point, other.getFace(otherFace).getTransformedNormal(other.getWorldTransform()), current, object, other));

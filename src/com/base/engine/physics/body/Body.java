@@ -393,6 +393,10 @@ public class Body {
         return currentState.orientation;
     }
 
+    public void setOrientation(float x, float y, float z, float w) {
+        currentState.orientation.set(x, y, z, w);
+    }
+
     public Vector3f getRenderPosition() {
         return interpolatedState.position;
     }

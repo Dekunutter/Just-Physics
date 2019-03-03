@@ -26,6 +26,7 @@ public class Debug {
     private static boolean isStepActive = false;
     private static Shader billboardShader;
     private static ArrayList<ContactPoint> contactPoints = new ArrayList<>();
+    private static ArrayList<Vector3f> clipPoints = new ArrayList<>();
 
     public static NumberFormat formatter = new DecimalFormat("0.0000000000");
 
@@ -111,6 +112,7 @@ public class Debug {
 
     public static void update() {
         Debug.contactPoints.clear();
+        Debug.clipPoints.clear();
     }
 
     //TODO: Change this to intake contact manifold objects instead so that I can create debug rendering for more than just the contact points
@@ -118,6 +120,15 @@ public class Debug {
     public static void addContactPoints(ArrayList<ContactPoint> contactPoints) {
         Debug.contactPoints.clear();
         Debug.contactPoints.addAll(contactPoints);
+    }
+
+    public static void addContactPoint(ContactPoint contactPoint) {
+        Debug.contactPoints.add(contactPoint);
+    }
+
+    public static void addClipPoints(ArrayList<Vector3f> clipPoints) {
+        Debug.clipPoints.clear();
+        Debug.clipPoints.addAll(clipPoints);
     }
 
     public static void renderContactPoints() {
@@ -146,6 +157,39 @@ public class Debug {
             billboardShader.setUniform("projectionMatrix", Renderer.transformation.getProjectionMatrix());
 
             Matrix4f modelViewMatrix = Renderer.transformation.getModelViewMatrix(current.getPosition(), new Quaternionf(1, 0, 0, 0), 1, Renderer.transformation.getViewMatrix());
+            billboardShader.setUniform("modelViewMatrix", modelViewMatrix);
+            billboardShader.setUniform("colour", colour.toVector4f());
+            contactMesh.render();
+            billboardShader.unbind();
+        }
+    }
+
+    public static void renderClipPoints() {
+        try {
+            billboardShader = BillboardShader.getInstance();
+            billboardShader.createUniform("projectionMatrix");
+            billboardShader.createUniform("modelViewMatrix");
+            billboardShader.createUniform("colour");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        float[] vertices = {-0.05f, 0.05f, 0, -0.05f, -0.05f, 0, 0.05f, -0.05f, 0, 0.05f, 0.05f, 0};
+        int[] indices = {0, 1, 2, 2, 3, 0};
+        Colour colour = new Colour(0, 1, 0);
+
+        for(int i = 0; i < clipPoints.size(); i++) {
+            Vector3f current = clipPoints.get(i);
+            billboardShader.assign(current);
+            billboardShader.bind();
+
+            Mesh contactMesh = new Mesh(vertices, new float[] {}, new float[] {}, indices);
+            Material material = new Material();
+            contactMesh.setMaterial(material);
+
+            billboardShader.setUniform("projectionMatrix", Renderer.transformation.getProjectionMatrix());
+
+            Matrix4f modelViewMatrix = Renderer.transformation.getModelViewMatrix(current, new Quaternionf(1, 0, 0, 0), 1, Renderer.transformation.getViewMatrix());
             billboardShader.setUniform("modelViewMatrix", modelViewMatrix);
             billboardShader.setUniform("colour", colour.toVector4f());
             contactMesh.render();

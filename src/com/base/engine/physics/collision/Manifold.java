@@ -5,6 +5,7 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 
+//TODO: Abstract this and split it up into two different manifold types for face vs edge collisions
 public class Manifold {
     private enum State {
         SEPARETED, COLLIDING, OVERLAPPING;
@@ -16,7 +17,7 @@ public class Manifold {
     private State collisionState;
     private int type;
     private final ArrayList<ContactPoint> points;
-    public Vector3f edgeDirectionA, edgeDirectionB;
+    public int edgeA, edgeB;
     public int referenceFace, incidentFace;
     public Vector3f supportA, supportB;
 
@@ -108,20 +109,20 @@ public class Manifold {
         this.points.addAll(points);
     }
 
-    public Vector3f getEdgeDirectionA() {
-        return edgeDirectionA;
+    public int getEdgeA() {
+        return edgeA;
     }
 
-    public Vector3f getEdgeDirectionB() {
-        return edgeDirectionB;
+    public int getEdgeB() {
+        return edgeB;
     }
 
-    public void setEdgeDirectionA(Vector3f edgeNormal) {
-        edgeDirectionA = edgeNormal;
+    public void setEdgeA(int edgeA) {
+        this.edgeA = edgeA;
     }
 
-    public void setEdgeDirectionB(Vector3f edgeNormal) {
-        edgeDirectionB = edgeNormal;
+    public void setEdgeB(int edgeB) {
+        this.edgeB = edgeB;
     }
 
     public Vector3f getSupportA() {

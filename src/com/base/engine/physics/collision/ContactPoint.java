@@ -36,12 +36,6 @@ public class ContactPoint {
         this.other = other;
     }
 
-    public void swapBodies() {
-        Body temp = body;
-        body = other;
-        other = temp;
-    }
-
     public void calculateData() {
         /*relativePosition = new Vector3f(position);
         relativePosition.sub(body.getPosition());
