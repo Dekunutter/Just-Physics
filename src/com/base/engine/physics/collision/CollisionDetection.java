@@ -158,7 +158,7 @@ public class CollisionDetection {
 
         Set<Plane> planes = getSidePlanes(reference, results.getReferenceFace());
 
-        ArrayList<Vector3f> faceVertices = incident.getVerticesOfFace(incident.getFace(incidentFace));
+        ArrayList<Vector3f> faceVertices = incident.getVerticesOfFace(incidentFace);
         ArrayList<Vector3f> transformedVertices = new ArrayList<>();
         for(int i = 0; i < faceVertices.size(); i++) {
             Vector3f transformedVertex = new Vector3f();
@@ -309,6 +309,9 @@ public class CollisionDetection {
         return result;
     }
 
+    //TODO: Pretty sure this is broken. It gets the second point on the edge but doesn't check whether we are
+    // interacting with the edge's faceA or faceB indexes, which could change which point we need to grab so in
+    // the case of some faces we could be doing this totally wrong. See how getVerticesOfFace() works in Body.
     private Set<Plane> getSidePlanes(Body object, int face) {
         Set<Plane> planes = new HashSet<>();
 
@@ -385,7 +388,7 @@ public class CollisionDetection {
         ArrayList<ContactPoint> safe = new ArrayList<>();
 
         Vector3f pointOnPlane = new Vector3f();
-        object.getVerticesOfFace(object.getFace(face)).get(0).mulPosition(object.getWorldTransform(), pointOnPlane);
+        object.getVerticesOfFace(face).get(0).mulPosition(object.getWorldTransform(), pointOnPlane);
         Vector3f axis = new Vector3f();
         object.getFace(face).getNormal().mulDirection(object.getWorldTransform(), axis);
         axis.normalize();

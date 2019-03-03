@@ -516,10 +516,16 @@ public class Body {
         return results;
     }
 
-    public ArrayList<Vector3f> getVerticesOfFace(Face face) {
+    public ArrayList<Vector3f> getVerticesOfFace(int faceIndex) {
         ArrayList<Vector3f> results = new ArrayList<>();
+        Face face = faces.get(faceIndex);
         for(int i = 0; i < face.getEdgeIndices().size(); i++) {
-            results.add(edges.get(face.getEdgeIndices().get(i)).getPointA());
+            Edge current = edges.get(face.getEdgeIndices().get(i));
+            if(current.getFaceAIndex() == faceIndex) {
+                results.add(current.getPointA());
+            } else {
+                results.add(current.getPointB());
+            }
         }
         return results;
     }

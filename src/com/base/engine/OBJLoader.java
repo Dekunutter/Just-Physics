@@ -132,8 +132,7 @@ public class OBJLoader {
                 if(!object.containsEdge(edge)) {
                     object.addEdge(edge);
                     index = object.getEdges().size() - 1;
-                }
-                else {
+                } else {
                     index = object.getEdgeIndex(edge);
                 }
                 faceObject.addEdgeIndex(index);
