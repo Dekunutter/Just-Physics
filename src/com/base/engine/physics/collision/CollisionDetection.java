@@ -49,7 +49,6 @@ public class CollisionDetection {
         return results;
     }
 
-    //TODO: Could I just get a point on the face as the plane point, instead of doing a support point calculation?
     private boolean queryFaceCollisions(Body reference, Body incident, Manifold results, Type collisionType) {
         for(int i = 0; i < reference.getFaceCount(); i++) {
             Vector3f axis = reference.getFace(i).getTransformedNormal(reference.getWorldTransform());
@@ -74,6 +73,8 @@ public class CollisionDetection {
         return true;
     }
 
+    //TODO: This has been fixed (typo was throwing off the calculations but the theory was right)
+    // BUT it needs further testing against more edge-edge collisions to verify fully. For my current test its good though.
     private boolean queryEdgeCollisions(Body reference, Body incident, Manifold results, Type collisionType)
     {
         ArrayList<Edge> edgesA = reference.getEdges();
@@ -89,21 +90,19 @@ public class CollisionDetection {
                 edgeBFaceANormal.negate();
                 Face incidentFaceB = incident.getFace(edgesB.get(j).getFaceBIndex());
                 Vector3f edgeBFaceBNormal = incidentFaceB.getTransformedNormal(incident.getWorldTransform());
-                edgeAFaceBNormal.negate();
+                edgeBFaceBNormal.negate();
 
                 Vector3f edgeADirection = edgesA.get(i).getTransformedDirection(reference.getWorldTransform()).normalize();
                 Vector3f edgeBDirection = edgesB.get(j).getTransformedDirection(incident.getWorldTransform()).normalize();
 
                 if(isMinkowskiFace(edgeAFaceANormal, edgeAFaceBNormal, edgeADirection, edgeBFaceANormal, edgeBFaceBNormal, edgeBDirection)) {
-                    //TODO: Verify the calculation of the manifold. I am confident this is fine but I want to be sure
-                    // test against some real edge collisions
                     Vector3f axis = new Vector3f();
                     edgeADirection.cross(edgeBDirection, axis);
                     if(axis.length() < 0.00000001f) {
                         continue;
                     }
                     axis.normalize();
-                    if(axis.dot(edgesA.get(i).getPointA()) > 0) {
+                    if(axis.dot(edgesA.get(i).getPointA()) < 0) {
                         axis.negate();
                     }
 
@@ -133,11 +132,18 @@ public class CollisionDetection {
         return true;
     }
 
+    //TODO: Might be able to use edge directions instead of these expensive cross products as equivalents in checking minkowski stuff
+    // But need to verify before I make such a change
     private boolean isMinkowskiFace(Vector3f edgeAFaceANormal, Vector3f edgeAFaceBNormal, Vector3f edgeADirection, Vector3f edgeBFaceANormal, Vector3f edgeBFaceBNormal, Vector3f edgeBDirection) {
-        float edgeBFaceADirection = edgeBFaceANormal.dot(edgeADirection);
-        float edgeBFaceBDirection = edgeBFaceBNormal.dot(edgeADirection);
-        float edgeAFaceADirection = edgeAFaceANormal.dot(edgeBDirection);
-        float edgeAFaceBDirection = edgeAFaceBNormal.dot(edgeBDirection);
+        Vector3f edgeACross = new Vector3f();
+        edgeAFaceBNormal.cross(edgeAFaceANormal, edgeACross);
+        Vector3f edgeBCross = new Vector3f();
+        edgeBFaceBNormal.cross(edgeBFaceANormal, edgeBCross);
+
+        float edgeBFaceADirection = edgeBFaceANormal.dot(edgeACross);
+        float edgeBFaceBDirection = edgeBFaceBNormal.dot(edgeACross);
+        float edgeAFaceADirection = edgeAFaceANormal.dot(edgeBCross);
+        float edgeAFaceBDirection = edgeAFaceBNormal.dot(edgeBCross);
 
         return ((edgeBFaceADirection * edgeBFaceBDirection < 0) && (edgeAFaceADirection * edgeAFaceBDirection < 0) && (edgeBFaceADirection * edgeAFaceBDirection > 0));
     }
@@ -174,11 +180,8 @@ public class CollisionDetection {
         Debug.addContactPoints(points);
     }
 
-    //TODO: Fix the edge contact point generation. Currently seems to work ok but could be
-    // improved. Needs additional testing. Am I really getting the shortest distance?
-    // Also, am I really getting the "support" edges? Edge to edge collisions can often have
-    // multiple edge options with the shortest manifold, so are the edges I am getting truly
-    // the closest between the two objects? I think they are but I should verify.
+    //TODO: Fix the edge contact point generation. Currently seems to work incorrectly.
+    // "Support" edges are now being calculated correctly but the closest point is definitely wrong still and needs to be fixed.
     private void getEdgeContactPoint(Body reference, Body incident, Manifold results) {
         Edge referenceEdge = reference.getEdge(results.getEdgeA());
         Edge incidentEdge = incident.getEdge(results.getEdgeB());
@@ -189,6 +192,13 @@ public class CollisionDetection {
         if(referenceEdgeTransformed == null || incidentEdgeTransformed == null) {
             return;
         }
+
+        ArrayList<Vector3f> clipPoints = new ArrayList<>();
+        clipPoints.add(referenceEdgeTransformed.getPointA());
+        clipPoints.add(referenceEdgeTransformed.getPointB());
+        clipPoints.add(incidentEdgeTransformed.getPointA());
+        clipPoints.add(incidentEdgeTransformed.getPointB());
+        Debug.addClipPoints(clipPoints);
 
         Vector3f edgeDirectionA = new Vector3f();
         Vector3f edgeDirectionB = new Vector3f();
