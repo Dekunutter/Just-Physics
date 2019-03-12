@@ -180,8 +180,7 @@ public class CollisionDetection {
         Debug.addContactPoints(points);
     }
 
-    //TODO: Fix the edge contact point generation. Currently seems to work incorrectly.
-    // "Support" edges are now being calculated correctly but the closest point is definitely wrong still and needs to be fixed.
+    //TODO: Test more thoroughly, but the point of contact is looking pretty good in the test scenario
     private void getEdgeContactPoint(Body reference, Body incident, Manifold results) {
         Edge referenceEdge = reference.getEdge(results.getEdgeA());
         Edge incidentEdge = incident.getEdge(results.getEdgeB());
@@ -200,15 +199,10 @@ public class CollisionDetection {
         clipPoints.add(incidentEdgeTransformed.getPointB());
         Debug.addClipPoints(clipPoints);
 
-        Vector3f edgeDirectionA = new Vector3f();
-        Vector3f edgeDirectionB = new Vector3f();
+        Vector3f edgeDirectionA = new Vector3f(referenceEdgeTransformed.getDirection());
+        Vector3f edgeDirectionB = new Vector3f(incidentEdgeTransformed.getDirection());
         Vector3f directionAToB = new Vector3f();
-        referenceEdgeTransformed.getPointB().sub(referenceEdgeTransformed.getPointA(), edgeDirectionA);
-        incidentEdgeTransformed.getPointB().sub(incidentEdgeTransformed.getPointA(), edgeDirectionB);
         referenceEdgeTransformed.getPointA().sub(incidentEdgeTransformed.getPointA(), directionAToB);
-        edgeDirectionA.normalize();
-        edgeDirectionB.normalize();
-        directionAToB.normalize();
         float a = edgeDirectionA.dot(edgeDirectionA);
         float b = edgeDirectionA.dot(edgeDirectionB);
         float c = edgeDirectionB.dot(edgeDirectionB);
@@ -272,9 +266,12 @@ public class CollisionDetection {
         edgeDirectionA.mul(sc, referenceSupportPoint);
         edgeDirectionB.mul(tc, incidentSupportPoint);
 
+        referenceSupportPoint.add(referenceEdge.getPointA());
         referenceSupportPoint.mulPosition(reference.getWorldTransform());
+        incidentSupportPoint.add(incidentEdge.getPointA());
         incidentSupportPoint.mulPosition(incident.getWorldTransform());
 
+        //TODO: Should it be w (sc * u) - (tc * v) or is this somehow equivalent?
         Vector3f contact = new Vector3f();
         referenceSupportPoint.add(incidentSupportPoint, contact);
         contact.div(2);
