@@ -203,68 +203,69 @@ public class CollisionDetection {
         Vector3f edgeDirectionB = new Vector3f(incidentEdgeTransformed.getDirection());
         Vector3f directionAToB = new Vector3f();
         referenceEdgeTransformed.getPointA().sub(incidentEdgeTransformed.getPointA(), directionAToB);
-        float a = edgeDirectionA.dot(edgeDirectionA);
-        float b = edgeDirectionA.dot(edgeDirectionB);
-        float c = edgeDirectionB.dot(edgeDirectionB);
-        float d = edgeDirectionA.dot(directionAToB);
-        float e = edgeDirectionB.dot(directionAToB);
-        float D = a * c - b * b;
+        float edgeADotEdgeA = edgeDirectionA.dot(edgeDirectionA);
+        float edgeADotEdgeB = edgeDirectionA.dot(edgeDirectionB);
+        float edgeBDotEdgeB = edgeDirectionB.dot(edgeDirectionB);
+        float edgeADotDirectionAB = edgeDirectionA.dot(directionAToB);
+        float edgeDirectionBDotDirectionAB = edgeDirectionB.dot(directionAToB);
+        float directionTotal = edgeADotEdgeA * edgeBDotEdgeB - edgeADotEdgeB * edgeADotEdgeB;
 
-        float sN = 0, tN = 0, sD = D, tD = D;
-        if(D < 0.0001f) {
-            sN = 0.0f;
-            sD = 1.0f;
-            tN = e;
-            tD = c;
+        float referenceNormal = 0, incidentNormal = 0;
+        float referenceDirection = directionTotal, incidentDirection = directionTotal;
+        if(directionTotal < 0.0001f) {
+            referenceNormal = 0.0f;
+            referenceDirection = 1.0f;
+            incidentNormal = edgeDirectionBDotDirectionAB;
+            incidentDirection = edgeBDotEdgeB;
         }
         else {
-            sN = b * e - c * d;
-            tN = a * e - b * d;
-            if(sN < 0.0f) {
-                sN = 0.0f;
-                tN = e;
-                tD = c;
+            referenceNormal = edgeADotEdgeB * edgeDirectionBDotDirectionAB - edgeBDotEdgeB * edgeADotDirectionAB;
+            incidentNormal = edgeADotEdgeA * edgeDirectionBDotDirectionAB - edgeADotEdgeB * edgeADotDirectionAB;
+            if(referenceNormal < 0.0f) {
+                referenceNormal = 0.0f;
+                incidentNormal = edgeDirectionBDotDirectionAB;
+                incidentDirection = edgeBDotEdgeB;
             }
-            else if(sN > sD) {
-                sN = sD;
-                tN = e + b;
-                tD = c;
+            else if(referenceNormal > referenceDirection) {
+                referenceNormal = referenceDirection;
+                incidentNormal = edgeDirectionBDotDirectionAB + edgeADotEdgeB;
+                incidentDirection = edgeBDotEdgeB;
             }
         }
-        if(tN < 0.0f) {
-            tN = 0.0f;
-            if(-d < 0.0f) {
-                sN = 0.0f;
+        if(incidentNormal < 0.0f) {
+            incidentNormal = 0.0f;
+            if(-edgeADotDirectionAB < 0.0f) {
+                referenceNormal = 0.0f;
             }
-            else if(-d > a) {
-                sN = sD;
+            else if(-edgeADotDirectionAB > edgeADotEdgeA) {
+                referenceNormal = referenceDirection;
             }
             else {
-                sN = -d;
-                sD = a;
+                referenceNormal = -edgeADotDirectionAB;
+                referenceDirection = edgeADotEdgeA;
             }
         }
-        else if(tN > tD) {
-            tN = tD;
+        else if(incidentNormal > incidentDirection) {
+            incidentNormal = incidentDirection;
 
-            if((-d + b) < 0.0f) {
-                sN = 0.0f;
+            if((-edgeADotDirectionAB + edgeADotEdgeB) < 0.0f) {
+                referenceNormal = 0.0f;
             }
-            else if((-d + b) > a) {
-                sN = sD;
+            else if((-edgeADotDirectionAB + edgeADotEdgeB) > edgeADotEdgeA) {
+                referenceNormal = referenceDirection;
             }
             else {
-                sN = (-d + b);
-                sD = a;
+                referenceNormal = (-edgeADotDirectionAB + edgeADotEdgeB);
+                referenceDirection = edgeADotEdgeA;
             }
         }
 
-        float sc = Math.abs(sN) < 0.0001f ? 0 : sN / sD;
-        float tc = Math.abs(tN) < 0.0001f ? 0 : tN / tD;
+        float referencePointPosition = Math.abs(referenceNormal) < 0.0001f ? 0 : referenceNormal / referenceDirection;
+        float incidentPointPosition = Math.abs(incidentNormal) < 0.0001f ? 0 : incidentNormal / incidentDirection;
         Vector3f referenceSupportPoint = new Vector3f();
         Vector3f incidentSupportPoint = new Vector3f();
-        edgeDirectionA.mul(sc, referenceSupportPoint);
-        edgeDirectionB.mul(tc, incidentSupportPoint);
+        edgeDirectionA.mul(referencePointPosition, referenceSupportPoint);
+        edgeDirectionB.mul(incidentPointPosition, incidentSupportPoint);
 
         referenceSupportPoint.add(referenceEdge.getPointA());
         referenceSupportPoint.mulPosition(reference.getWorldTransform());
