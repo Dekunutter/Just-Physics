@@ -73,8 +73,6 @@ public class CollisionDetection {
         return true;
     }
 
-    //TODO: This has been fixed (typo was throwing off the calculations but the theory was right)
-    // BUT it needs further testing against more edge-edge collisions to verify fully. For my current test its good though.
     private boolean queryEdgeCollisions(Body reference, Body incident, Manifold results, Type collisionType)
     {
         ArrayList<Edge> edgesA = reference.getEdges();
@@ -180,7 +178,6 @@ public class CollisionDetection {
         Debug.addContactPoints(points);
     }
 
-    //TODO: Test more thoroughly, but the point of contact is looking pretty good in the test scenario
     private void getEdgeContactPoint(Body reference, Body incident, Manifold results) {
         Edge referenceEdge = reference.getEdge(results.getEdgeA());
         Edge incidentEdge = incident.getEdge(results.getEdgeB());
@@ -281,7 +278,7 @@ public class CollisionDetection {
         clipPoints.add(referenceSupportPoint);
         clipPoints.add(incidentSupportPoint);
         Debug.addClipPoints(clipPoints);
-        
+
         Debug.addContactPoint(point);
     }
 
