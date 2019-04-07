@@ -329,7 +329,7 @@ public class Body {
         return inverseMass;
     }
 
-    public Matrix3f getInervseInertia() {
+    public Matrix3f getInverseInertia() {
         return inverseInertiaTensor;
     }
 
@@ -337,6 +337,7 @@ public class Body {
         this.force.add(force);
     }
 
+    // TODO: Swap to transforms???
     public void addForce(Vector3f force, Vector3f point) {
         this.force.add(force);
 
@@ -359,6 +360,22 @@ public class Body {
 
     public void addImpulse(Vector3f impulse) {
         currentState.momentum.add(impulse);
+    }
+
+    // TODO: Swap to transforms???
+    public void addImpulse(Vector3f impulse, Vector3f point) {
+        addImpulse(impulse);
+
+        Vector3f relativePosition = new Vector3f();
+        Vector3f angularImpulse = new Vector3f();
+
+        point.sub(currentState.position, relativePosition);
+        impulse.cross(relativePosition, angularImpulse);
+        addAngularImpulse(angularImpulse);
+    }
+
+    public void addAngularImpulse(Vector3f impulse) {
+        currentState.angularMomentum.add(impulse);
     }
 
     public Vector3f getVelocityAtPoint(Vector3f point) {

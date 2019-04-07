@@ -84,6 +84,7 @@ public class World implements GameLoop {
         for(int i = 0; i < worldObjects.size(); i++) {
             worldObjects.get(i).update(integrationType);
         }
+        //TODO: Move all collision response code to another class and keep it out of the World class
         //TODO: Need to decide on a continuous solution as this will not stop tunneling from occurring in its current setup
         Manifold collision = collider.separatingAxisTheorem(testObject.getBody(), testObjectB.getBody());
         if(collision != null && collision.isColliding()) {
@@ -92,9 +93,37 @@ public class World implements GameLoop {
             // might not need this if I come up with a proper continuous detection solution
             testObject.getBody().addToPosition(collision.getEnterNormal().mul(collision.getPenetration(), new Vector3f()));
 
-            float impulse = -(1.0f + 0.25f) * testObject.getBody().getVelocity().dot(collision.getEnterNormal());
+            for(ContactPoint point : collision.getContactPoints()) {
+                point.calculateData();
+
+                //TODO: Implement sequential solver for multiple contact point collisions. Current code will only work for single contact point collisions
+                //using point normals is wrong. Am I calculating those normals incorrectly?
+                Vector3f pointVelocity = testObject.getBody().getVelocityAtPoint(point.getPosition());
+                Vector3f pointBVelocity = testObjectB.getBody().getVelocityAtPoint(point.getPosition());
+                Vector3f relativeVelocity = pointVelocity.sub(pointBVelocity, new Vector3f());
+                Vector3f pointBodySpace = point.getPosition().mulPosition(testObject.getBody().getLocalTransform(), new Vector3f());
+                Vector3f pointBBodySpace = point.getPosition().mulPosition(testObjectB.getBody().getLocalTransform(), new Vector3f());
+                float term1 = -(1.0f + 0.25f) * relativeVelocity.dot(collision.getEnterNormal());
+                float term2 = testObject.getBody().getInverseMass() + testObjectB.getBody().getInverseMass();
+                Vector3f term3 = pointBodySpace.cross(collision.getEnterNormal(), new Vector3f()).cross(pointBodySpace, new Vector3f()).mul(testObject.getBody().getInverseInertia(), new Vector3f());
+                Vector3f term4 = pointBBodySpace.cross(collision.getEnterNormal(), new Vector3f()).cross(pointBBodySpace, new Vector3f()).mul(testObjectB.getBody().getInverseInertia(), new Vector3f());
+                float impulse = term1 / term2 + term3.add(term4).dot(collision.getEnterNormal());
+                testObject.getBody().addImpulse(collision.getEnterNormal().mul(impulse, new Vector3f()), point.getPosition());
+                testObjectB.getBody().addImpulse(collision.getEnterNormal().negate(new Vector3f()).mul(impulse, new Vector3f()), point.getPosition());
+            }
+            // temporarily held onto as working linear response for the first object
+            /*float impulse = -(1.0f + 0.25f) * testObject.getBody().getVelocity().dot(collision.getEnterNormal());
             Debug.println("Impulse for collision is %s from %s", impulse, testObject.getBody().getVelocity().dot(collision.getEnterNormal()));
-            testObject.getBody().addImpulse(collision.getEnterNormal().mul(impulse, new Vector3f()));
+            testObject.getBody().addImpulse(collision.getEnterNormal().mul(impulse, new Vector3f()));*/
+
+            // angular response, but currently only runs off of the first contact point (so no good for face collisions) and only affects the first object
+            /*ContactPoint point = collision.getContactPoints().get(0);
+            Vector3f pointVelocity = testObject.getBody().getVelocityAtPoint(point.getPosition());
+            Vector3f pointBodySpace = point.getPosition().mulPosition(testObject.getBody().getLocalTransform(), new Vector3f());
+            float term1 = -(1.0f + 0.25f) * pointVelocity.dot(collision.getEnterNormal());
+            float term2 = testObject.getBody().getInverseMass() + (pointBodySpace.cross(collision.getEnterNormal(), new Vector3f()).cross(pointBodySpace, new Vector3f())).mul(testObject.getBody().getInverseInertia(), new Vector3f()).dot(collision.getEnterNormal());
+            float impulse = term1 / term2;
+            testObject.getBody().addImpulse(collision.getEnterNormal().mul(impulse, new Vector3f()), point.getPosition());*/
         }
     }
 
