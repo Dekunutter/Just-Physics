@@ -357,6 +357,10 @@ public class Body {
         torque.zero();
     }
 
+    public void addImpulse(Vector3f impulse) {
+        currentState.momentum.add(impulse);
+    }
+
     public Vector3f getVelocityAtPoint(Vector3f point) {
         Vector3f relativePosition = new Vector3f();
         Vector3f torque = new Vector3f();
@@ -375,6 +379,15 @@ public class Body {
     public void setPosition(float x, float y, float z) {
         currentState.position.set(x, y, z);
         currentState.previousPosition.set(x, y, z);
+    }
+
+    public void addToPosition(Vector3f positionCorrection) {
+        currentState.position.sub(positionCorrection);
+        currentState.previousPosition.sub(positionCorrection);
+    }
+
+    public Vector3f getVelocity() {
+        return currentState.velocity;
     }
 
     public float getScale() {

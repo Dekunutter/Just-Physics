@@ -93,14 +93,6 @@ public class Manifold {
         return points;
     }
 
-    public void addContactPoint(Vector3f point, Body body) {
-        points.add(new ContactPoint(point, body));
-    }
-
-    public void addContactPoint(Vector3f point, Vector3f normal, Body body, Body other) {
-        points.add(new ContactPoint(point, normal, body, other));
-    }
-
     public void addContactPoint(ContactPoint point) {
         points.add(point);
     }

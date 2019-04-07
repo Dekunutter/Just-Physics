@@ -8,26 +8,6 @@ public class ContactPoint {
     private float penetration;
     private Body body, other;
 
-    private float[] vertices = {-0.05f, 0.05f, 0, -0.05f, -0.05f, 0, 0.05f, -0.05f, 0, 0.05f, 0.05f, 0};
-    private int[] indices = {0, 1, 2, 2, 3, 0};
-
-    public ContactPoint(Vector3f position, Body body) {
-        this.position = position;
-        this.body = body;
-    }
-
-    public ContactPoint(Vector3f position, float depth) {
-        this.position = position;
-        this.penetration = depth;
-    }
-
-    public ContactPoint(Vector3f position, Vector3f normal, Body body, Body other) {
-        this.position = position;
-        this.normal = normal;
-        this.body = body;
-        this.other = other;
-    }
-
     public ContactPoint(Vector3f position, Vector3f normal, float depth, Body body, Body other) {
         this.position = position;
         this.normal = normal;

@@ -7,6 +7,7 @@ import com.base.engine.loop.GameLoop;
 import com.base.engine.loop.Renderer;
 import com.base.engine.physics.Integration;
 import com.base.engine.physics.collision.CollisionDetection;
+import com.base.engine.physics.collision.ContactPoint;
 import com.base.engine.physics.collision.Manifold;
 import com.base.engine.render.Attenuation;
 import com.base.engine.render.lighting.*;
@@ -34,15 +35,17 @@ public class World implements GameLoop {
 
     private void initObjects() throws Exception {
         worldObjects = new ArrayList<>();
-        testObject = new TestObject(new Vector3f(0, 0, -5));
+        testObject = new TestObject(new Vector3f(0.75f, -5, -5f));
+        testObject.getBody().setOrientation(0.75f, 0, 0, 1);
         testObject.setController(Game.getInstance().getPlayerInput());
-        testObject.getBody().addForce(new Vector3f(0, 10.0f, 0));
-        testObject.getBody().addTorque(new Vector3f(100.0f, 0, 0));
+        testObject.getBody().addForce(new Vector3f(0, 100.0f, 0));
+        //testObject.getBody().addTorque(new Vector3f(100.0f, 0, 0));
         worldObjects.add(testObject);
         CameraObject cameraObject = new CameraObject(this);
         cameraObject.setController(Game.getInstance().getPlayerInput());
         worldObjects.add(cameraObject);
-        testObjectB = new TestObject(new Vector3f(0, 3, -5));
+        testObjectB = new TestObject(new Vector3f(0, 0, -5));
+        testObjectB.getBody().setOrientation(0.5f, 1f, 0, 1);
         testObjectB.setController(Game.getInstance().getPlayerInput());
         worldObjects.add(testObjectB);
 
@@ -81,7 +84,18 @@ public class World implements GameLoop {
         for(int i = 0; i < worldObjects.size(); i++) {
             worldObjects.get(i).update(integrationType);
         }
+        //TODO: Need to decide on a continuous solution as this will not stop tunneling from occurring in its current setup
         Manifold collision = collider.separatingAxisTheorem(testObject.getBody(), testObjectB.getBody());
+        if(collision != null && collision.isColliding()) {
+            //TODO: Try calculating collision on the MINIMUM penetration axis and see what happens, might be more stable to collisions against certain sides
+            // correct the position first since we can't have any overlap to correctly calculate response
+            // might not need this if I come up with a proper continuous detection solution
+            testObject.getBody().addToPosition(collision.getEnterNormal().mul(collision.getPenetration(), new Vector3f()));
+
+            float impulse = -(1.0f + 0.25f) * testObject.getBody().getVelocity().dot(collision.getEnterNormal());
+            Debug.println("Impulse for collision is %s from %s", impulse, testObject.getBody().getVelocity().dot(collision.getEnterNormal()));
+            testObject.getBody().addImpulse(collision.getEnterNormal().mul(impulse, new Vector3f()));
+        }
     }
 
     @Override
@@ -101,6 +115,7 @@ public class World implements GameLoop {
                 worldObjects.get(j).render(lights);
             }
 
+            Debug.renderClipPoints();
             Debug.renderContactPoints();
         }
     }
