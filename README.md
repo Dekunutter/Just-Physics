@@ -29,10 +29,14 @@ I've added some different game loop types in the Engine and Time classes:
 My favourite is a fixed time step with freed physics and interpolation in the game loop. It allows the physics to adjust to the framerate of the system without dealing with the possibility of floating point issues on variable time deltas AND it creates an interpolated copy of positional values for the renderer to render smoothly.
 
 ## Collision Detection
-Currently the engine just has one collision detection algorithm implemented and it still needs further testing to seems to offer some pretty good results so far:
+Currently the engine just has one collision detection algorithm implemented and it still needs further testing but seems to offer some pretty good results so far:
 - Seperating Axis Thereom
 
 I currently have the SAT algorithm running in world space, but I could optimize it to run in body space, performing all calculations in the space of one body relative to the other.
+
+## Collision Response
+The state of this currently is incredibly rudimentary. It does not deal with the contact points the SAT algorithm currently generates and instead it deals directly on the Manifold and does a simple positional correction followed by a impulse to correct the first body in the collision pairing.
+The plan is to implement a full impulse-based collision resolution system utilizing contact point information in the future
 
 ## Other stuff
 Additional necessary logic in this project I coded to create a basic engine to support my physics work:
