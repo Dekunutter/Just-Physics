@@ -2,9 +2,11 @@ package com.base.engine;
 
 import com.base.engine.loop.GameLoop;
 import com.base.engine.physics.Integration;
+import com.base.engine.physics.collision.CollisionDetection;
 
 public abstract class GameState implements GameLoop {
     protected String gameTitle = "My Game";
+    protected CollisionDetection collisionType = CollisionDetection.BASIC_SAT;
 
     public abstract void start() throws Exception;
 
@@ -30,6 +32,10 @@ public abstract class GameState implements GameLoop {
 
     public String getTitle() {
         return gameTitle;
+    }
+
+    public void setCollisionDetectionType(CollisionDetection collisionType) {
+        this.collisionType = collisionType;
     }
 
     @Override

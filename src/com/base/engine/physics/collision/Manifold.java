@@ -8,7 +8,7 @@ import java.util.ArrayList;
 //TODO: Abstract this and split it up into two different manifold types for face vs edge collisions
 public class Manifold {
     private enum State {
-        SEPARETED, COLLIDING, OVERLAPPING;
+        SEPARATED, COLLIDING, OVERLAPPING
     }
 
     private Body bodyA, bodyB;
@@ -24,7 +24,7 @@ public class Manifold {
     public Manifold(Body bodyA, Body bodyB) {
         this.bodyA = bodyA;
         this.bodyB = bodyB;
-        collisionState = State.SEPARETED;
+        collisionState = State.SEPARATED;
 
         penetration = -Float.MAX_VALUE;
         normal = new Vector3f();
@@ -78,7 +78,7 @@ public class Manifold {
     }
 
     public boolean isColliding() {
-        return collisionState != State.SEPARETED;
+        return collisionState != State.SEPARATED;
     }
 
     public int getType() {

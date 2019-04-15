@@ -2,6 +2,7 @@ package com.base.engine;
 
 import com.base.engine.loop.*;
 import com.base.engine.physics.Integration;
+import com.base.engine.physics.collision.CollisionDetection;
 import com.base.engine.render.DisplaySettings;
 
 public class Engine implements Runnable {
@@ -36,17 +37,23 @@ public class Engine implements Runnable {
     }
 
     public void start(GameState gameToRun) {
-        start(gameToRun, LoopType.FIXED, Integration.EXPLICIT);
+        start(gameToRun, LoopType.FIXED, Integration.EXPLICIT, CollisionDetection.BASIC_SAT);
     }
 
     public void start(GameState gameToRun, LoopType gameLoopType) {
-        start(gameToRun, gameLoopType, Integration.EXPLICIT);
+        start(gameToRun, gameLoopType, Integration.EXPLICIT, CollisionDetection.BASIC_SAT);
     }
 
-    public void start(GameState gameToRun, LoopType gameloopType, Integration integrationType) {
+    public void start(GameState gameToRun, LoopType gameLoopType, Integration integrationType) {
+        start(gameToRun, gameLoopType, integrationType, CollisionDetection.BASIC_SAT);
+    }
+
+    public void start(GameState gameToRun, LoopType gameloopType, Integration integrationType, CollisionDetection collisionType) {
         this.gameToRun = gameToRun;
         this.gameLoopType = gameloopType;
         this.integrationType = integrationType;
+
+        this.gameToRun.setCollisionDetectionType(collisionType);
 
         String osName = System.getProperty("os.name");
         if(osName.contains("Mac")) {

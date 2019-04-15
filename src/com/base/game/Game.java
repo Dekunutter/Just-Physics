@@ -40,7 +40,7 @@ public class Game extends GameState {
         colour = 0.0f;
         colourDirection = 0.0f;
 
-        world = new World();
+        world = new World(collisionType);
 
         playerInput = new InputParser();
     }

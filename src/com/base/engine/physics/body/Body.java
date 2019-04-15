@@ -337,14 +337,13 @@ public class Body {
         this.force.add(force);
     }
 
-    // TODO: Swap to transforms???
     public void addForce(Vector3f force, Vector3f point) {
         this.force.add(force);
 
         Vector3f relativePosition = new Vector3f();
         Vector3f torque = new Vector3f();
 
-        point.sub(currentState.position, relativePosition);
+        point.mulPosition(getLocalTransform(), relativePosition);
         force.cross(relativePosition, torque);
         addTorque(torque);
     }
@@ -362,14 +361,13 @@ public class Body {
         currentState.momentum.add(impulse);
     }
 
-    // TODO: Swap to transforms???
     public void addImpulse(Vector3f impulse, Vector3f point) {
         addImpulse(impulse);
 
         Vector3f relativePosition = new Vector3f();
         Vector3f angularImpulse = new Vector3f();
 
-        point.sub(currentState.position, relativePosition);
+        point.mulPosition(getLocalTransform(), relativePosition);
         impulse.cross(relativePosition, angularImpulse);
         addAngularImpulse(angularImpulse);
     }
@@ -396,6 +394,11 @@ public class Body {
     public void setPosition(float x, float y, float z) {
         currentState.position.set(x, y, z);
         currentState.previousPosition.set(x, y, z);
+    }
+
+    public void setPosition(Vector3f position) {
+        currentState.position.set(position);
+        currentState.previousPosition.set(position);
     }
 
     public void addToPosition(Vector3f positionCorrection) {
@@ -563,5 +566,4 @@ public class Body {
         }
         return results;
     }
-
 }
