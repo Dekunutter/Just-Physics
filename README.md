@@ -29,10 +29,11 @@ I've added some different game loop types in the Engine and Time classes:
 My favourite is a fixed time step with freed physics and interpolation in the game loop. It allows the physics to adjust to the framerate of the system without dealing with the possibility of floating point issues on variable time deltas AND it creates an interpolated copy of positional values for the renderer to render smoothly.
 
 ## Collision Detection
-Currently the engine just has one collision detection algorithm implemented and it still needs further testing but seems to offer some pretty good results so far:
+Currently the engine just has two collision detection algorithms implemented that need further testing but seem to offer some pretty good results so far:
 - Seperating Axis Thereom
+- GJK
 
-I currently have the SAT algorithm running in world space, but I could optimize it to run in body space, performing all calculations in the space of one body relative to the other.
+I currently have these algorithms running in world space, but I could optimize it to run in body space, performing all calculations in the space of one body relative to the other. The GJK implementation is currently quite barebones and more of a draft than a full implementation but it will successfully detect a collision between two convex polygons.
 
 ## Collision Response
 The state of this currently is incredibly rudimentary. Currently there is a working angular response between the two test objects in zero gravity but it is using some work arounds and in dirty code for the time being.
