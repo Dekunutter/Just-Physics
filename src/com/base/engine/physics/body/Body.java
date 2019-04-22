@@ -16,8 +16,9 @@ public class Body {
     private State currentState, previousState, interpolatedState;
     protected Matrix4f transform;
     private Vector3f force, torque;
-    private float mass, inverseMass;
+    private float mass, inverseMass, restitution;
     private Matrix3f inertiaTensor, inverseInertiaTensor;
+    private boolean solid;
 
     private final LinkedList<Vector3f> vertices;
     private final ArrayList<Edge> edges;
@@ -39,6 +40,10 @@ public class Body {
         inertiaTensor = calculateInertiaTensor();
         inverseInertiaTensor = new Matrix3f(inertiaTensor);
         inertiaTensor.invert(inverseInertiaTensor);
+
+        restitution = 0f;
+
+        solid = true;
 
         vertices = new LinkedList<>();
         edges = new ArrayList<>();
@@ -333,6 +338,18 @@ public class Body {
         return inverseInertiaTensor;
     }
 
+    public void setSolid(boolean value) {
+        solid = value;
+    }
+
+    public boolean isSolid() {
+        return solid;
+    }
+
+    public float getRestitution() {
+        return restitution;
+    }
+
     public void addForce(Vector3f force) {
         this.force.add(force);
     }
@@ -408,6 +425,10 @@ public class Body {
 
     public Vector3f getVelocity() {
         return currentState.velocity;
+    }
+
+    public Vector3f getAngularVelocity() {
+        return currentState.angularVelocity;
     }
 
     public float getScale() {

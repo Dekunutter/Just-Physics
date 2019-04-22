@@ -19,28 +19,28 @@ public class SeparatingAxisTheorem implements CollisionAlgorithm {
 
     //TODO: Try out collision detection in bodyA space instead of world space
     //TODO: Should pass in some collision body instead of physics body, too much data going in here currrently. More of an issue with swept bodies
-    public Manifold detect(Body bodyA, Body bodyB) {
-        Manifold results = new Manifold(bodyA, bodyB);
-        if(!queryFaceCollisions(bodyA, bodyB, results, Type.FACE_OF_A)) {
+    public Manifold detect(CollisionIsland island) {
+        Manifold results = new Manifold(island.getColliderA(), island.getColliderB());
+        if(!queryFaceCollisions(island.getColliderA(), island.getColliderB(), results, Type.FACE_OF_A)) {
             return results;
         }
-        if(!queryFaceCollisions(bodyB, bodyA, results, Type.FACE_OF_B)) {
+        if(!queryFaceCollisions(island.getColliderB(), island.getColliderA(), results, Type.FACE_OF_B)) {
             return results;
         }
-        if(!queryEdgeCollisions(bodyA, bodyB, results, Type.EDGE)) {
+        if(!queryEdgeCollisions(island.getColliderA(), island.getColliderB(), results, Type.EDGE)) {
             return results;
         }
 
         if(results.getType() == Type.FACE_OF_A.ordinal()) {
-            getFaceContactPoints(bodyA, bodyB, results);
+            getFaceContactPoints(island.getColliderA(), island.getColliderB(), results);
         } else if(results.getType() == Type.FACE_OF_B.ordinal()) {
-            getFaceContactPoints(bodyB, bodyA, results);
+            getFaceContactPoints(island.getColliderB(), island.getColliderA(), results);
         } else {
-            getEdgeContactPoint(bodyA, bodyB, results);
+            getEdgeContactPoint(island.getColliderA(), island.getColliderB(), results);
         }
 
         Vector3f offset = new Vector3f();
-        bodyB.getPosition().sub(bodyA.getPosition(), offset);
+        island.getColliderB().getPosition().sub(island.getColliderA().getPosition(), offset);
         if(results.getEnterNormal().dot(offset) > 0) {
             results.getEnterNormal().negate();
         }

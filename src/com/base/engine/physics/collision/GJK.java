@@ -6,10 +6,10 @@ import org.joml.Vector3f;
 public class GJK implements CollisionAlgorithm {
     private Simplex simplex;
 
-    public Manifold detect(Body bodyA, Body bodyB) {
+    public Manifold detect(CollisionIsland island) {
         simplex = new Simplex();
-        Manifold results = new Manifold(bodyA, bodyB);
-        evolveSimplex(bodyA, bodyB, results);
+        Manifold results = new Manifold(island.getColliderA(), island.getColliderB());
+        evolveSimplex(island.getColliderA(), island.getColliderB(), results);
         return results;
     }
 
@@ -17,9 +17,9 @@ public class GJK implements CollisionAlgorithm {
         Vector3f referenceCenter = new Vector3f();
         Vector3f incidentCenter = new Vector3f();
         Vector3f direction = new Vector3f();
-        Vector3f lineAB = new Vector3f();
+        Vector3f lineAB;
         Vector3f lineOrigin = new Vector3f();
-        Vector3f lineAC = new Vector3f();
+        Vector3f lineAC;
         switch(simplex.getSize()) {
             case 0:
                 reference.getPosition().mulPosition(reference.getWorldTransform(), referenceCenter);
@@ -72,13 +72,12 @@ public class GJK implements CollisionAlgorithm {
                     simplex.removeVertex(1);
                     direction = new Vector3f(cad);
                 } else {
-                    //origin is inside all triangles, so return with collision
                     results.setOverlapped();
                     return;
                 }
                 break;
             default:
-                // invalid. Throw error?
+                System.err.print("GJK evolved an invalid simplex. Simplex has " + simplex.getSize() + " lines, above the max of 4");
                 return;
         }
         Vector3f newPoint = getMinkowskiDifference(reference, incident, direction);

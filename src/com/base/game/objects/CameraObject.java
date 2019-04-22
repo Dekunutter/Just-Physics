@@ -28,6 +28,7 @@ public class CameraObject extends GameObject {
         world.addCamera(camera);
 
         body = new Body();
+        body.setSolid(false);
         body.setPosition(0, 0, 0);
     }
 
