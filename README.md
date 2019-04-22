@@ -36,7 +36,7 @@ Currently the engine just has two collision detection algorithms implemented tha
 I currently have these algorithms running in world space, but I could optimize it to run in body space, performing all calculations in the space of one body relative to the other. The GJK implementation is currently quite barebones and more of a draft than a full implementation but it will successfully detect a collision between two convex polygons.
 
 ## Collision Response
-The state of this currently is incredibly rudimentary. Currently there is a working angular response between the two test objects in zero gravity but it is using some work arounds and in dirty code for the time being.
+The state of this currently is pretty rudimentary. Currently there is a working linear and angular response functions in the collision resolver class, looking out for collisions between two objects in zero gravity. It is using some work arounds and dirty code for the time being as I have no sequential solver implemented for multiple contact points.
 The plan is to implement a full impulse-based collision resolution system utilizing sequential solvers for contact points in the future
 
 ## Other stuff
