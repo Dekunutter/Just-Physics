@@ -1,10 +1,12 @@
 package com.base.engine.physics.collision;
 
+import com.base.engine.Debug;
 import com.base.engine.physics.body.Body;
 import org.joml.Vector3f;
 
 public class CollisionResolver {
     //TODO: Implement sequential solver for multiple contact point collisions. Current code is a lazy solution
+    // Only solves for one contact point using a break point, so the system won't build velocity
     public void resolveCollisionsLinearly(CollisionIsland island, Manifold data) {
         Body colliderA = island.getColliderA();
         Body colliderB = island.getColliderB();
@@ -20,11 +22,13 @@ public class CollisionResolver {
             float bounciness = getImpulseBounce(colliderA, colliderB);
             float impulse = bounciness * (impulseTerm1 / impulseTerm2);
 
-            applyImpulses(colliderA, colliderA, impulse, point, data.getEnterNormal());
+            applyImpulses(colliderA, colliderB, impulse, point, data.getEnterNormal(), false);
+            break;
         }
     }
 
     //TODO: Implement sequential solver for multiple contact point collisions here too
+    // Current system builds velocity since it solves for each contact point
     public void resolveCollisions(CollisionIsland island, Manifold data) {
         Body colliderA = island.getColliderA();
         Body colliderB = island.getColliderB();
@@ -51,7 +55,7 @@ public class CollisionResolver {
             float angularPointVelocityA = pointXNormalA.dot(colliderA.getAngularVelocity());
             float angularPointVelocityB = pointXNormalB.dot(colliderB.getAngularVelocity());
 
-            float impulseTerm1 = pointVelocity.dot(data.getEnterNormal());
+            float impulseTerm1 = pointVelocity.dot(data.getEnterNormal());// + angularPointVelocityA - angularPointVelocityB;
 
             pointXNormalA.cross(pointBodySpaceA, pointXNormalXPointA);
             pointXNormalB.cross(pointBodySpaceB, pointXNormalXPointB);
@@ -78,15 +82,39 @@ public class CollisionResolver {
     }
 
     private void applyImpulses(Body colliderA, Body colliderB, float impulse, ContactPoint point, Vector3f normal) {
+        applyImpulses(colliderA, colliderB, impulse, point, normal, true);
+    }
+
+    private void applyImpulses(Body colliderA, Body colliderB, float impulse, ContactPoint point, Vector3f normal, boolean enableRotation) {
         Vector3f invertedNormal = new Vector3f();
-        Vector3f directedImpulseA = new Vector3f();
-        Vector3f directedImpulseB = new Vector3f();
-
         normal.negate(invertedNormal);
-        normal.mul(impulse / colliderA.getMass(), directedImpulseA);
-        invertedNormal.mul(impulse / colliderB.getMass(), directedImpulseB);
 
-        colliderA.addImpulse(directedImpulseA, point.getPosition());
-        colliderB.addImpulse(directedImpulseB, point.getPosition());
+        float impulseA = impulse * colliderA.getInverseMass();
+        float impulseB = impulse * colliderB.getInverseMass();
+        Debug.println("Impulses are %s and %s", impulseA, impulseB);
+        applyLinearCollisionImpulse(colliderA, impulseA, normal);
+        applyLinearCollisionImpulse(colliderB, impulseB, invertedNormal);
+        if(enableRotation) {
+            applyAngularCollisionImpulse(colliderA, impulseA, point, normal);
+            applyAngularCollisionImpulse(colliderB, impulseB, point, invertedNormal);
+        }
+    }
+
+    private void applyLinearCollisionImpulse(Body collider, float impulse, Vector3f normal) {
+        Vector3f linearImpulse = new Vector3f();
+
+        normal.mul(impulse, linearImpulse);
+        collider.addImpulse(linearImpulse);
+    }
+
+    private void applyAngularCollisionImpulse(Body collider, float impulse, ContactPoint point, Vector3f normal) {
+        Vector3f relativePosition = new Vector3f();
+        Vector3f positionXNormal = new Vector3f();
+        Vector3f angularImpulse = new Vector3f();
+
+        point.getPosition().mulPosition(collider.getLocalTransform(), relativePosition);
+        relativePosition.cross(normal, positionXNormal);
+        positionXNormal.mul(impulse, angularImpulse);
+        collider.addAngularImpulse(angularImpulse);
     }
 }

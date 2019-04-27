@@ -132,6 +132,10 @@ public class Debug {
     }
 
     public static void renderContactPoints() {
+        if(!enabled) {
+            return;
+        }
+
         try {
             billboardShader = BillboardShader.getInstance();
             billboardShader.createUniform("projectionMatrix");
@@ -165,6 +169,10 @@ public class Debug {
     }
 
     public static void renderClipPoints() {
+        if(!enabled) {
+            return;
+        }
+
         try {
             billboardShader = BillboardShader.getInstance();
             billboardShader.createUniform("projectionMatrix");
