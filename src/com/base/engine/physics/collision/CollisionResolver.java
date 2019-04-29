@@ -68,7 +68,20 @@ public class CollisionResolver {
             float impulse = bounciness * (impulseTerm1 / impulseTerm2);
 
             applyImpulses(colliderA, colliderB, impulse, point, data.getEnterNormal());
+            break;
         }
+    }
+
+    public void correctPositions(CollisionIsland island, Manifold collisionData) {
+        float allowance = 0.01f;
+        float correctionAmount = 0.8f;
+        Body colliderA = island.getColliderA();
+        Body colliderB = island.getColliderB();
+
+        Vector3f correction = new Vector3f();
+        collisionData.getEnterNormal().mul(Math.min(collisionData.getPenetration() - allowance, 0.0f) / (colliderA.getInverseMass() + colliderB.getInverseMass()) * correctionAmount, correction);
+        colliderA.setPosition(colliderA.getPosition().sub(correction.mul(colliderA.getInverseMass())));
+        colliderB.setPosition(colliderB.getPosition().add(correction.mul(colliderB.getInverseMass())));
     }
 
     private Vector3f getRelativePointVelocity(Body colliderA, Body colliderB, ContactPoint point) {

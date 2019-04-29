@@ -140,7 +140,10 @@ public class World implements GameLoop {
                         collisions.add(island);
 
                         collisionData = collider.detect(island);
-                        resolver.resolveCollisions(island, collisionData);
+                        if(collisionData.isColliding()) {
+                            resolver.resolveCollisions(island, collisionData);
+                            resolver.correctPositions(island, collisionData);
+                        }
                     }
                 }
                 break;

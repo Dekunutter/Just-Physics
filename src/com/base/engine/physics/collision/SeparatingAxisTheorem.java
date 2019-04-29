@@ -74,10 +74,7 @@ public class SeparatingAxisTheorem implements CollisionAlgorithm {
         return true;
     }
 
-    //TODO: Seems in very rare cases to return the wrong edges as the support edges (looks to be the opposite edges from what it should be)
-    // This only seems to happen with edge-corner collisions? Hard to replicate
-    private boolean queryEdgeCollisions(Body reference, Body incident, Manifold results, Type collisionType)
-    {
+    private boolean queryEdgeCollisions(Body reference, Body incident, Manifold results, Type collisionType) {
         ArrayList<Edge> edgesA = reference.getEdges();
         ArrayList<Edge> edgesB = incident.getEdges();
         for(int i = 0; i < edgesA.size(); i++) {
@@ -99,22 +96,21 @@ public class SeparatingAxisTheorem implements CollisionAlgorithm {
                 if(isMinkowskiFace(edgeAFaceANormal, edgeAFaceBNormal, edgeADirection, edgeBFaceANormal, edgeBFaceBNormal, edgeBDirection)) {
                     Vector3f axis = new Vector3f();
                     edgeADirection.cross(edgeBDirection, axis);
-                    if(axis.length() < 0.00000001f) {
+                    if(axis.length() == 0) {
                         continue;
                     }
                     axis.normalize();
-                    if(axis.dot(edgesA.get(i).getPointA()) < 0) {
+                    Vector3f transformedPointA = new Vector3f();
+                    Vector3f transformedPointB = new Vector3f();
+                    Vector3f bminusa = new Vector3f();
+                    Vector3f dist = new Vector3f();
+                    edgesA.get(i).getPointA().mulPosition(reference.getWorldTransform(), transformedPointA);
+                    edgesB.get(j).getPointA().mulPosition(incident.getWorldTransform(), transformedPointB);
+                    if(axis.dot(transformedPointA.sub(reference.getPosition(), dist)) < 0) {
                         axis.negate();
                     }
 
-                    Vector3f planePoint = reference.getSupport(axis);
-
-                    Plane plane = new Plane(axis, planePoint);
-                    Vector3f negatedNormal = new Vector3f();
-                    plane.getNormal().negate(negatedNormal);
-                    Vector3f support = incident.getSupport(negatedNormal);
-
-                    float distance = plane.distanceToPoint(support);
+                    float distance = axis.dot(transformedPointB.sub(transformedPointA, bminusa));
                     if(distance > 0) {
                         return false;
                     }
@@ -124,8 +120,6 @@ public class SeparatingAxisTheorem implements CollisionAlgorithm {
                         results.setEnterNormal(axis);
                         results.setEdgeA(i);
                         results.setEdgeB(j);
-                        results.setSupportA(planePoint);
-                        results.setSupportB(support);
                     }
                 }
             }
