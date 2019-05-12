@@ -31,9 +31,9 @@ My favourite is a fixed time step with freed physics and interpolation in the ga
 ## Collision Detection
 Currently the engine just has two collision detection algorithms implemented that need further testing but seem to offer some pretty good results so far:
 - Seperating Axis Thereom
-- GJK
+- GJK and EPA
 
-I currently have these algorithms running in world space, but I could optimize it to run in body space, performing all calculations in the space of one body relative to the other. The GJK implementation is currently quite barebones and more of a draft than a full implementation but it will successfully detect a collision between two convex polygons.
+I currently have these algorithms running in world space, but I could optimize it to run in body space, performing all calculations in the space of one body relative to the other. The GJK implementation is currently a bit barebones but it does successfully run through EPA to generate some basic collision manifold information. There's no resolver running off of this information yet and contact points are not yet being generated.
 
 ## Collision Response
 The state of this currently is pretty rudimentary. Currently there is a working linear and angular response functions in the collision resolver class, looking out for collisions between two objects in zero gravity. It is using some work arounds and dirty code for the time being as I have no sequential solver implemented for multiple contact points.
