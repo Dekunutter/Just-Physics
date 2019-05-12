@@ -3,6 +3,9 @@ package com.base.engine.physics.collision;
 import com.base.engine.physics.body.Body;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GJK implements CollisionAlgorithm {
     private Simplex simplex;
 
@@ -73,6 +76,7 @@ public class GJK implements CollisionAlgorithm {
                     direction = new Vector3f(cad);
                 } else {
                     results.setOverlapped();
+                    getCollisionInformation(results);
                     return;
                 }
                 break;
@@ -80,26 +84,26 @@ public class GJK implements CollisionAlgorithm {
                 System.err.print("GJK evolved an invalid simplex. Simplex has " + simplex.getSize() + " lines, above the max of 4");
                 return;
         }
-        Vector3f newPoint = getMinkowskiDifference(reference, incident, direction);
+        SimplexSupportPoint newPoint = getMinkowskiDifference(reference, incident, direction);
         if(addToSimplex(newPoint, direction)) {
             evolveSimplex(reference, incident, results);
         }
         return;
     }
 
-    private Vector3f getMinkowskiDifference(Body bodyA, Body bodyB, Vector3f direction) {
+    private SimplexSupportPoint getMinkowskiDifference(Body bodyA, Body bodyB, Vector3f direction) {
         Vector3f directionA = new Vector3f();
         Vector3f directionB = new Vector3f();
         direction.normalize(directionA);
         directionA.negate(directionB);
 
-        Vector3f result = new Vector3f();
-        bodyA.getSupport(directionA).sub(bodyB.getSupport(directionB), result);
-        return result;
+        Vector3f supportA = bodyA.getSupport(directionA);
+        Vector3f supportB = bodyB.getSupport(directionB);
+        return new SimplexSupportPoint(supportA, supportB);
     }
 
-    private boolean addToSimplex(Vector3f point, Vector3f direction) {
-        if(!hasPassedOrigin(point, direction)) {
+    private boolean addToSimplex(SimplexSupportPoint point, Vector3f direction) {
+        if(!hasPassedOrigin(point.getPoint(), direction)) {
             return false;
         }
         simplex.setPoint(point);
@@ -111,5 +115,72 @@ public class GJK implements CollisionAlgorithm {
             return false;
         }
         return true;
+    }
+
+    private void getCollisionInformation(Manifold results) {
+        List<SimplexTriangle> triangles = new ArrayList<>();
+        List<SimplexEdge> edges = new ArrayList<>();
+
+        triangles.add(new SimplexTriangle(simplex.getSupport(0), simplex.getSupport(1), simplex.getSupport(2)));
+        triangles.add(new SimplexTriangle(simplex.getSupport(0), simplex.getSupport(2), simplex.getSupport(3)));
+        triangles.add(new SimplexTriangle(simplex.getSupport(0), simplex.getSupport(3), simplex.getSupport(1)));
+        triangles.add(new SimplexTriangle(simplex.getSupport(1), simplex.getSupport(3), simplex.getSupport(2)));
+
+        while(true) {
+            float minimumDistance = Float.MAX_VALUE;
+            SimplexTriangle closestFace = null;
+            for (int i = 0; i < triangles.size(); i++) {
+                float distance = Math.abs(triangles.get(i).getNormal().dot(triangles.get(i).getPoint(0).getPoint()));
+                if (distance < minimumDistance) {
+                    closestFace = triangles.get(i);
+                    minimumDistance = distance;
+                }
+            }
+
+            SimplexSupportPoint furthestPoint = getMinkowskiDifference(results.getReferenceBody(), results.getIncidentBody(), closestFace.getNormal());
+            float newDistance = closestFace.getNormal().dot(furthestPoint.getPoint());
+            if(newDistance - minimumDistance < 0.000001f) {
+                Vector3f contactNormal = new Vector3f();
+                closestFace.getNormal().negate(contactNormal);
+                float penetration = minimumDistance;
+
+                results.setEnterNormal(contactNormal);
+                results.setPenetration(penetration);
+                break;
+            }
+
+            List<SimplexTriangle> toRemove = new ArrayList<>();
+            for(int i = 0; i < triangles.size(); i++) {
+                Vector3f distanceToTriangle = new Vector3f();
+                furthestPoint.getPoint().sub(triangles.get(i).getPoint(0).getPoint(), distanceToTriangle);
+                if(triangles.get(i).getNormal().dot(distanceToTriangle) > 0) {
+                    addSimplexEdge(edges, triangles.get(i).getPoint(0), triangles.get(i).getPoint(1));
+                    addSimplexEdge(edges, triangles.get(i).getPoint(1), triangles.get(i).getPoint(2));
+                    addSimplexEdge(edges, triangles.get(i).getPoint(2), triangles.get(i).getPoint(0));
+                    toRemove.add(triangles.get(i));
+                }
+            }
+            triangles.removeAll(toRemove);
+
+            for(int i = 0; i < edges.size(); i++) {
+                triangles.add(new SimplexTriangle(furthestPoint, edges.get(i).getPoint(0), edges.get(i).getPoint(1)));
+            }
+            edges.clear();
+        }
+    }
+
+    private void addSimplexEdge(List<SimplexEdge> edges, SimplexSupportPoint pointA, SimplexSupportPoint pointB) {
+        SimplexEdge toRemove = null;
+        for(int i = 0; i < edges.size(); i++) {
+            if(edges.get(i).isOpposingEdge(pointA, pointB)) {
+                toRemove = edges.get(i);
+                break;
+            }
+        }
+        if(toRemove == null) {
+            edges.add(new SimplexEdge(pointA, pointB));
+        } else {
+            edges.remove(toRemove);
+        }
     }
 }
