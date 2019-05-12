@@ -13,6 +13,6 @@ public class Launcher {
         //Debug.enablePolygonMode();
 
         Engine engine = Engine.getInstance();
-        engine.start(game, LoopType.INTERPOLATED, Integration.SEMI_IMPLICIT, CollisionDetection.GJK);
+        engine.start(game, LoopType.INTERPOLATED, Integration.SEMI_IMPLICIT, CollisionDetection.BASIC_SAT);
     }
 }
