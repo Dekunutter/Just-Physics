@@ -47,8 +47,8 @@ public class SimplexTriangle {
         float d21 = v2.dot(v1);
         float demoninator = (d00 * d11) - (d01 * d01);
 
-        float v = ((d11 * d20) - (d01 * d21) / demoninator);
-        float w = ((d00 * d21) - (d01 * d20) / demoninator);
+        float v = ((d11 * d20) - (d01 * d21)) / demoninator;
+        float w = ((d00 * d21) - (d01 * d20)) / demoninator;
         float u = 1.0f - v - w;
         return new Vector3f(u, v, w);
     }

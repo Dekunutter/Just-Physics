@@ -1,5 +1,6 @@
 package com.base.engine.physics.collision;
 
+import com.base.engine.Debug;
 import com.base.engine.physics.body.Body;
 import org.joml.Vector3f;
 
@@ -140,12 +141,22 @@ public class GJK implements CollisionAlgorithm {
             SimplexSupportPoint furthestPoint = getMinkowskiDifference(results.getReferenceBody(), results.getIncidentBody(), closestFace.getNormal());
             float newDistance = closestFace.getNormal().dot(furthestPoint.getPoint());
             if(newDistance - minimumDistance < 0.000001f) {
+                Vector3f barycentre = closestFace.getBarycentricCoordinate();
+                Vector3f worldSupportA = new Vector3f(closestFace.getPoint(0).getSupportA());
+                Vector3f worldSupportB = new Vector3f(closestFace.getPoint(1).getSupportA());
+                Vector3f worldSupportC = new Vector3f(closestFace.getPoint(2).getSupportA());
+                Vector3f contactPoint = new Vector3f(worldSupportA.mul(barycentre.x).add(worldSupportB.mul(barycentre.y)).add(worldSupportC.mul(barycentre.z)));
                 Vector3f contactNormal = new Vector3f();
                 closestFace.getNormal().negate(contactNormal);
                 float penetration = minimumDistance;
 
+                ContactPoint trueContactPoint = new ContactPoint(contactPoint, contactNormal, penetration, results.getReferenceBody(), results.getIncidentBody());
+
+                results.addContactPoint(trueContactPoint);
                 results.setEnterNormal(contactNormal);
                 results.setPenetration(penetration);
+
+                Debug.addContactPoint(trueContactPoint);
                 break;
             }
 
