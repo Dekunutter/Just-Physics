@@ -111,6 +111,7 @@ public class World implements GameLoop {
 
     @Override
     public void update(Integration integrationType) {
+        List<CollisionIsland> collisions = new ArrayList<>();
         Manifold collisionData;
         switch (collisionType) {
             case BASIC_SAT:
@@ -118,7 +119,6 @@ public class World implements GameLoop {
                     worldObjects.get(i).update(integrationType);
                 }
 
-                List<CollisionIsland> collisions = new ArrayList<>();
                 for(int i = 0; i < worldObjects.size(); i++) {
                     Body colliderA = worldObjects.get(i).getBody();
                     if(!colliderA.isSolid()) {
@@ -163,14 +163,33 @@ public class World implements GameLoop {
                     worldObjects.get(i).update(integrationType);
                 }
 
-                CollisionIsland island = new CollisionIsland(testObject.getBody(), testObjectB.getBody());
+                for(int i = 0; i < worldObjects.size(); i++) {
+                    Body colliderA = worldObjects.get(i).getBody();
+                    if(!colliderA.isSolid()) {
+                        continue;
+                    }
+                    for(int j = 0; j < worldObjects.size(); j++) {
+                        Body colliderB = worldObjects.get(j).getBody();
+                        if(!colliderB.isSolid()) {
+                            continue;
+                        }
+                        if(i == j) {
+                            continue;
+                        }
 
-                GJK collider2 = new GJK();
-                collisionData = collider2.detect(island);
-                if(collisionData.isColliding()) {
-                    System.out.println("COLLIDING NOW");
+                        CollisionIsland island = new CollisionIsland(colliderA, colliderB);
+                        if(collisions.contains(island)) {
+                            continue;
+                        }
+                        collisions.add(island);
+
+                        collisionData = collider.detect(island);
+                        if(collisionData.isColliding()) {
+                            resolver.resolveCollisions(island, collisionData);
+                            resolver.correctPositions(island, collisionData);
+                        }
+                    }
                 }
-                break;
         }
     }
 

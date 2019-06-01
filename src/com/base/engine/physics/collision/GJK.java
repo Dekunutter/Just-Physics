@@ -8,31 +8,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GJK implements CollisionAlgorithm {
+    private static final int MAX_ITERATIONS = 20;
+
     private Simplex simplex;
+    private int iterationCount;
 
     public Manifold detect(CollisionIsland island) {
         simplex = new Simplex();
         Manifold results = new Manifold(island.getColliderA(), island.getColliderB());
+        iterationCount = 0;
         evolveSimplex(island.getColliderA(), island.getColliderB(), results);
         return results;
     }
 
     public void evolveSimplex(Body reference, Body incident, Manifold results) {
-        Vector3f referenceCenter = new Vector3f();
-        Vector3f incidentCenter = new Vector3f();
+        Vector3f referenceCenter, incidentCenter;
         Vector3f direction = new Vector3f();
         Vector3f lineAB;
         Vector3f lineOrigin = new Vector3f();
         Vector3f lineAC;
         switch(simplex.getSize()) {
             case 0:
-                reference.getPosition().mulPosition(reference.getWorldTransform(), referenceCenter);
-                incident.getPosition().mulPosition(incident.getWorldTransform(), incidentCenter);
+                referenceCenter = new Vector3f(reference.getPosition());
+                incidentCenter = new Vector3f(incident.getPosition());
                 incidentCenter.sub(referenceCenter, direction);
                 break;
             case 1:
-                reference.getPosition().mulPosition(reference.getWorldTransform(), referenceCenter);
-                incident.getPosition().mulPosition(incident.getWorldTransform(), incidentCenter);
+                referenceCenter = new Vector3f(reference.getPosition());
+                incidentCenter = new Vector3f(incident.getPosition());
                 incidentCenter.sub(referenceCenter, direction);
                 direction.negate();
                 break;
@@ -46,7 +49,7 @@ public class GJK implements CollisionAlgorithm {
             case 3:
                 lineAC = simplex.getSecondLine();
                 lineAB = simplex.getFirstLine();
-                lineAC.cross(lineAB, direction);
+                lineAB.cross(lineAC, direction);
                 simplex.getPoint(0).negate(lineOrigin);
                 if(direction.dot(lineOrigin) < 0) {
                     direction.negate();
@@ -85,8 +88,9 @@ public class GJK implements CollisionAlgorithm {
                 System.err.print("GJK evolved an invalid simplex. Simplex has " + simplex.getSize() + " lines, above the max of 4");
                 return;
         }
+        iterationCount++;
         SimplexSupportPoint newPoint = getMinkowskiDifference(reference, incident, direction);
-        if(addToSimplex(newPoint, direction)) {
+        if(addToSimplex(newPoint, direction) && iterationCount < MAX_ITERATIONS) {
             evolveSimplex(reference, incident, results);
         }
         return;
