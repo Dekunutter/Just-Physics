@@ -2,59 +2,46 @@ package com.base.engine.physics.collision;
 
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Simplex {
-    private List<SimplexSupportPoint> points;
+    private SimplexSupportPoint[] points;
+    private int pointsFilled;
 
     public Simplex() {
-        points = new ArrayList<>();
+        points = new SimplexSupportPoint[4];
+        for(int i = 0; i < points.length; i++) {
+            points[i] = new SimplexSupportPoint();
+        }
+        pointsFilled = 0;
     }
 
-    public void setPoint(SimplexSupportPoint newPoint) {
-        points.add(newPoint);
+    public void setPoint(int index, SimplexSupportPoint newPoint) {
+        points[index] = newPoint;
+        pointsFilled++;
+    }
+
+    public SimplexSupportPoint getPoint(int index) {
+        return points[index];
+    }
+
+    public Vector3f getPointCoordinates(int index) {
+        return points[index].getPoint();
+    }
+
+    public void copyPoint(int indexA, int indexB) {
+        points[indexA] = new SimplexSupportPoint(points[indexB]);
+    }
+
+    public Vector3f getLine(int indexA, int indexB) {
+        Vector3f line = new Vector3f();
+        points[indexA].getPoint().sub(points[indexB].getPoint(), line);
+        return line;
+    }
+
+    public void devolve() {
+        pointsFilled--;
     }
 
     public int getSize() {
-        return points.size();
-    }
-
-    public Vector3f getPoint(int index) {
-        return points.get(index).getPoint();
-    }
-
-    public Vector3f getFirstLine() {
-        return getLine(points.get(0).getPoint(), points.get(1).getPoint());
-    }
-
-    public Vector3f getSecondLine() {
-        return getLine(points.get(0).getPoint(), points.get(2).getPoint());
-    }
-
-    public Vector3f getEdgeA() {
-        return getLine(points.get(0).getPoint(), points.get(3).getPoint());
-    }
-
-    public Vector3f getEdgeB() {
-        return getLine(points.get(1).getPoint(), points.get(3).getPoint());
-    }
-
-    public Vector3f getEdgeC() {
-        return getLine(points.get(2).getPoint(), points.get(3).getPoint());
-    }
-
-    public void removeVertex(int index) {
-        points.remove(index);
-    }
-
-    public SimplexSupportPoint getSupport(int index) {
-        return points.get(index);
-    }
-
-    private Vector3f getLine(Vector3f firstPoint, Vector3f secondPoint) {
-        Vector3f line = new Vector3f();
-        secondPoint.sub(firstPoint, line);
-        return line;
+        return pointsFilled;
     }
 }

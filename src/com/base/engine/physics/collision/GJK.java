@@ -8,128 +8,209 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GJK implements CollisionAlgorithm {
-    private static final int MAX_ITERATIONS = 20;
+    private static final int MAX_ITERATIONS = 50;
 
     private Simplex simplex;
-    private int iterationCount;
+    private Vector3f direction;
 
+    @Override
     public Manifold detect(CollisionIsland island) {
         simplex = new Simplex();
+        direction = new Vector3f(1, 1, 1);
         Manifold results = new Manifold(island.getColliderA(), island.getColliderB());
-        iterationCount = 0;
-        evolveSimplex(island.getColliderA(), island.getColliderB(), results);
+
+        simplex.setPoint(2, support(island.getColliderA(), island.getColliderB(), direction));
+        simplex.getPointCoordinates(2).negate(direction);
+
+        simplex.setPoint(1, support(island.getColliderA(), island.getColliderB(), direction));
+        if(simplex.getPointCoordinates(1).dot(direction) < 0) {
+            return results;
+        }
+
+        Vector3f cXb = new Vector3f();
+        Vector3f negatedB = new Vector3f();
+        simplex.getPointCoordinates(1).negate(negatedB);
+        Vector3f cToB = simplex.getLine(2, 1);
+        cToB.cross(negatedB, cXb);
+        cXb.cross(cToB, direction);
+
+        int iterationCount = 0;
+        while(iterationCount < MAX_ITERATIONS) {
+            simplex.setPoint(0, support(island.getColliderA(), island.getColliderB(), direction));
+            if(simplex.getPointCoordinates(0).dot(direction) < 0) {
+                return results;
+            } else {
+                if(containsOrigin()) {
+                    results.setOverlapped();
+                    getCollisionInformation(results);
+                    return results;
+                }
+            }
+            iterationCount++;
+        }
         return results;
     }
 
-    public void evolveSimplex(Body reference, Body incident, Manifold results) {
-        Vector3f referenceCenter, incidentCenter;
-        Vector3f direction = new Vector3f();
-        Vector3f lineAB;
+    private SimplexSupportPoint support(Body reference, Body incident, Vector3f direction) {
+        Vector3f supportA = reference.getSupport(direction);
+        Vector3f negatedDirection = new Vector3f();
+        direction.negate(negatedDirection);
+        Vector3f supportB = incident.getSupport(negatedDirection);
+        SimplexSupportPoint support = new SimplexSupportPoint(supportA, supportB);
+        return support;
+    }
+
+    private boolean containsOrigin() {
         Vector3f lineOrigin = new Vector3f();
-        Vector3f lineAC;
-        switch(simplex.getSize()) {
-            case 0:
-                referenceCenter = new Vector3f(reference.getPosition());
-                incidentCenter = new Vector3f(incident.getPosition());
-                incidentCenter.sub(referenceCenter, direction);
-                break;
-            case 1:
-                referenceCenter = new Vector3f(reference.getPosition());
-                incidentCenter = new Vector3f(incident.getPosition());
-                incidentCenter.sub(referenceCenter, direction);
-                direction.negate();
-                break;
-            case 2:
-                lineAB = simplex.getFirstLine();
-                simplex.getPoint(0).negate(lineOrigin);
-                Vector3f abXao = new Vector3f();
-                lineAB.cross(lineOrigin, abXao);
-                abXao.cross(lineAB, direction);
-                break;
-            case 3:
-                lineAC = simplex.getSecondLine();
-                lineAB = simplex.getFirstLine();
-                lineAB.cross(lineAC, direction);
-                simplex.getPoint(0).negate(lineOrigin);
-                if(direction.dot(lineOrigin) < 0) {
-                    direction.negate();
-                }
-                break;
-            case 4:
-                Vector3f lineDA = simplex.getEdgeA();
-                Vector3f lineDB = simplex.getEdgeB();
-                Vector3f lineDC = simplex.getEdgeC();
-                Vector3f dOrigin = new Vector3f();
-                simplex.getPoint(3).negate(dOrigin);
+        simplex.getPointCoordinates(0).negate(lineOrigin);
 
-                Vector3f abd = new Vector3f();
-                Vector3f bcd = new Vector3f();
-                Vector3f cad = new Vector3f();
-                lineDA.cross(lineDB, abd);
-                lineDB.cross(lineDC, bcd);
-                lineDC.cross(lineDA, cad);
-
-                if(abd.dot(dOrigin) > 0) {
-                    simplex.removeVertex(2);
-                    direction = new Vector3f(abd);
-                } else if(bcd.dot(dOrigin) > 0) {
-                    simplex.removeVertex(0);
-                    direction = new Vector3f(bcd);
-                } else if(cad.dot(dOrigin) > 0) {
-                    simplex.removeVertex(1);
-                    direction = new Vector3f(cad);
-                } else {
-                    results.setOverlapped();
-                    getCollisionInformation(results);
-                    return;
-                }
-                break;
-            default:
-                System.err.print("GJK evolved an invalid simplex. Simplex has " + simplex.getSize() + " lines, above the max of 4");
-                return;
+        if(simplex.getSize() == 2) {
+            return doesLineContainOrigin(lineOrigin);
+        } else if(simplex.getSize() == 3) {
+            return doesTriangleContainOrigin(lineOrigin);
+        } else if(simplex.getSize() == 4) {
+            return doesTetrahedronContainOrigin(lineOrigin);
+        } else {
+            simplex.devolve();
         }
-        iterationCount++;
-        SimplexSupportPoint newPoint = getMinkowskiDifference(reference, incident, direction);
-        if(addToSimplex(newPoint, direction) && iterationCount < MAX_ITERATIONS) {
-            evolveSimplex(reference, incident, results);
-        }
-        return;
+        return false;
     }
 
-    private SimplexSupportPoint getMinkowskiDifference(Body bodyA, Body bodyB, Vector3f direction) {
-        Vector3f directionA = new Vector3f();
-        Vector3f directionB = new Vector3f();
-        direction.normalize(directionA);
-        directionA.negate(directionB);
+    private boolean doesLineContainOrigin(Vector3f lineOrigin) {
+        Vector3f lineAB = simplex.getLine(1, 0);
 
-        Vector3f supportA = bodyA.getSupport(directionA);
-        Vector3f supportB = bodyB.getSupport(directionB);
-        return new SimplexSupportPoint(supportA, supportB);
+        Vector3f lineDirection = new Vector3f();
+        lineAB.cross(lineOrigin, lineDirection);
+        lineDirection.cross(lineAB, direction);
+
+        simplex.copyPoint(2, 1);
+        simplex.copyPoint(1, 0);
+
+        return false;
     }
 
-    private boolean addToSimplex(SimplexSupportPoint point, Vector3f direction) {
-        if(!hasPassedOrigin(point.getPoint(), direction)) {
+    private boolean doesTriangleContainOrigin(Vector3f lineOrigin) {
+        Vector3f faceDirection = new Vector3f();
+
+        Vector3f lineAB = simplex.getLine(1, 0);
+        Vector3f lineAC = simplex.getLine(2, 0);
+        lineAB.cross(lineAC, faceDirection);
+
+        Vector3f directionToAB = new Vector3f();
+        lineAB.cross(faceDirection, directionToAB);
+        if(directionToAB.dot(lineOrigin) > 0) {
+            simplex.copyPoint(2, 1);
+            simplex.copyPoint(1, 0);
+            Vector3f lineDirection = new Vector3f();
+            lineAB.cross(lineOrigin, lineDirection);
+            lineDirection.cross(lineAB, direction);
+            simplex.devolve();
             return false;
         }
-        simplex.setPoint(point);
+
+        Vector3f directionFromAC = new Vector3f();
+        faceDirection.cross(lineAC, directionFromAC);
+        if(directionFromAC.dot(lineOrigin) > 0) {
+            simplex.copyPoint(1, 0);
+            Vector3f lineDirection = new Vector3f();
+            lineAC.cross(lineOrigin, lineDirection);
+            lineDirection.cross(lineAC, direction);
+            simplex.devolve();
+            return false;
+        }
+
+        if(faceDirection.dot(lineOrigin) > 0) {
+            simplex.copyPoint(3, 2);
+            simplex.copyPoint(2, 1);
+            simplex.copyPoint(1, 0);
+            direction = new Vector3f(faceDirection);
+        } else {
+            simplex.copyPoint(3, 1);
+            simplex.copyPoint(1, 0);
+            direction = new Vector3f(faceDirection.negate());
+        }
+        return false;
+    }
+
+    private boolean doesTetrahedronContainOrigin(Vector3f lineOrigin) {
+        Vector3f lineAB = simplex.getLine(1, 0);
+        Vector3f lineAC = simplex.getLine(2, 0);
+
+        Vector3f faceDirectionABC = new Vector3f();
+        lineAB.cross(lineAC, faceDirectionABC);
+        if(faceDirectionABC.dot(lineOrigin) > 0) {
+            return checkTetrahedronFace(lineOrigin, lineAB, lineAC, faceDirectionABC);
+        }
+
+        Vector3f faceDirectionACD = new Vector3f();
+        Vector3f lineAD = simplex.getLine(3, 0);
+        lineAC.cross(lineAD, faceDirectionACD);
+        if(faceDirectionACD.dot(lineOrigin) > 0) {
+            simplex.copyPoint(1, 2);
+            simplex.copyPoint(2, 3);
+            lineAB = new Vector3f(lineAC);
+            lineAC = new Vector3f(lineAD);
+            faceDirectionABC = new Vector3f(faceDirectionACD);
+            return checkTetrahedronFace(lineOrigin, lineAB, lineAC, faceDirectionABC);
+        }
+
+        Vector3f faceDirectionADB = new Vector3f();
+        lineAD.cross(lineAB, faceDirectionADB);
+        if(faceDirectionADB.dot(lineOrigin) > 0) {
+            simplex.copyPoint(2, 1);
+            simplex.copyPoint(3, 1);
+            lineAC = new Vector3f(lineAB);
+            lineAB = new Vector3f(lineAD);
+            faceDirectionABC = new Vector3f(faceDirectionADB);
+            return checkTetrahedronFace(lineOrigin, lineAB, lineAC, faceDirectionABC);
+        }
+
         return true;
     }
 
-    private boolean hasPassedOrigin(Vector3f point, Vector3f direction) {
-        if(point.dot(direction) < 0) {
+    private boolean checkTetrahedronFace(Vector3f lineOrigin, Vector3f lineAB, Vector3f lineAC, Vector3f faceDirection) {
+        Vector3f directionFromAB = new Vector3f();
+
+        lineAB.cross(faceDirection, directionFromAB);
+        if(directionFromAB.dot(lineOrigin) > 0) {
+            simplex.copyPoint(2, 1);
+            simplex.copyPoint(1, 0);
+            Vector3f lineDirection = new Vector3f();
+            lineAB.cross(lineOrigin, lineDirection);
+            lineDirection.cross(lineAB, direction);
+            simplex.devolve();
+            simplex.devolve();
             return false;
         }
-        return true;
+
+        Vector3f abcac = new Vector3f();
+        faceDirection.cross(lineAC, abcac);
+        if(abcac.dot(lineOrigin) > 0) {
+            simplex.copyPoint(1, 0);
+            Vector3f lineDirection = new Vector3f();
+            lineAC.cross(lineOrigin, lineDirection);
+            lineDirection.cross(lineAC, direction);
+            simplex.devolve();
+            simplex.devolve();
+            return false;
+        }
+
+        simplex.copyPoint(3, 2);
+        simplex.copyPoint(2, 1);
+        simplex.copyPoint(1, 0);
+        direction = new Vector3f(faceDirection);
+        simplex.devolve();
+        return false;
     }
 
     private void getCollisionInformation(Manifold results) {
         List<SimplexTriangle> triangles = new ArrayList<>();
         List<SimplexEdge> edges = new ArrayList<>();
 
-        triangles.add(new SimplexTriangle(simplex.getSupport(0), simplex.getSupport(1), simplex.getSupport(2)));
-        triangles.add(new SimplexTriangle(simplex.getSupport(0), simplex.getSupport(2), simplex.getSupport(3)));
-        triangles.add(new SimplexTriangle(simplex.getSupport(0), simplex.getSupport(3), simplex.getSupport(1)));
-        triangles.add(new SimplexTriangle(simplex.getSupport(1), simplex.getSupport(3), simplex.getSupport(2)));
+        triangles.add(new SimplexTriangle(simplex.getPoint(0), simplex.getPoint(1), simplex.getPoint(2)));
+        triangles.add(new SimplexTriangle(simplex.getPoint(0), simplex.getPoint(2), simplex.getPoint(3)));
+        triangles.add(new SimplexTriangle(simplex.getPoint(0), simplex.getPoint(3), simplex.getPoint(1)));
+        triangles.add(new SimplexTriangle(simplex.getPoint(1), simplex.getPoint(3), simplex.getPoint(2)));
 
         while(true) {
             float minimumDistance = Float.MAX_VALUE;
@@ -142,7 +223,7 @@ public class GJK implements CollisionAlgorithm {
                 }
             }
 
-            SimplexSupportPoint furthestPoint = getMinkowskiDifference(results.getReferenceBody(), results.getIncidentBody(), closestFace.getNormal());
+            SimplexSupportPoint furthestPoint = support(results.getReferenceBody(), results.getIncidentBody(), closestFace.getNormal());
             float newDistance = closestFace.getNormal().dot(furthestPoint.getPoint());
             if(newDistance - minimumDistance < 0.000001f) {
                 Vector3f barycentre = closestFace.getBarycentricCoordinate();

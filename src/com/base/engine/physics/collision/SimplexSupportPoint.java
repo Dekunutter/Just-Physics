@@ -7,17 +7,23 @@ import java.util.Objects;
 public class SimplexSupportPoint {
     private Vector3f supportA, supportB, minkowskiDifference;
 
+    public SimplexSupportPoint() {
+        supportA = new Vector3f();
+        supportB = new Vector3f();
+        minkowskiDifference = new Vector3f();
+    }
+
+    public SimplexSupportPoint(SimplexSupportPoint other) {
+        supportA = other.getSupportA();
+        supportB = other.getSupportB();
+        minkowskiDifference = other.getPoint();
+    }
+
     public SimplexSupportPoint(Vector3f supportA, Vector3f supportB) {
         this.supportA = supportA;
         this.supportB = supportB;
         minkowskiDifference = new Vector3f();
         supportA.sub(supportB, minkowskiDifference);
-    }
-
-    public SimplexSupportPoint(Vector3f supportA, Vector3f supportB, Vector3f minkowskiDifference) {
-        this.supportA = supportA;
-        this.supportB = supportB;
-        this.minkowskiDifference = minkowskiDifference;
     }
 
     public Vector3f getPoint() {
