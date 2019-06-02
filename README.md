@@ -33,7 +33,7 @@ Currently the engine just has two collision detection algorithms implemented tha
 - Seperating Axis Thereom
 - GJK and EPA
 
-I currently have these algorithms running in world space, but I could optimize it to run in body space, performing all calculations in the space of one body relative to the other. The GJK implementation is currently a bit barebones but it does successfully run through EPA to generate some basic collision manifold information. There's no resolver running off of this information yet and contact points are not yet being generated.
+I currently have these algorithms running in world space, but I could optimize it to run in body space, performing all calculations in the space of one body relative to the other. The GJK implementation successfully runs through EPA to generate some basic collision manifold information but currently just returns one contact point. Persistent contacts would need to be implemented to improve this design.
 
 ## Collision Response
 The state of this currently is pretty rudimentary. Currently there is a working linear and angular response functions in the collision resolver class, looking out for collisions between two objects in zero gravity. It is using some work arounds and dirty code for the time being as I have no sequential solver implemented for multiple contact points.
