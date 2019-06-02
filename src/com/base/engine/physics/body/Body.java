@@ -552,7 +552,7 @@ public class Body {
 
     public Vector3f getSupport(Vector3f axis) {
         float distance = -Float.MAX_VALUE;
-        Vector3f furthest = null;
+        Vector3f furthest = new Vector3f();
         for(int i = 0; i < vertices.size(); i++) {
             Vector3f newVertex = new Vector3f();
             vertices.get(i).mulPosition(transform, newVertex);
